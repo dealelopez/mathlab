@@ -36,6 +36,15 @@ describe('Bead', () => {
     expect(circle.getAttribute('fill')).toContain('color-mix');
   });
 
+  it('inactiva tiene el borde aclarado respecto a la activa', () => {
+    const { container: c1 } = renderBead({ active: true });
+    const { container: c2 } = renderBead({ active: false });
+    const s1 = c1.querySelector('circle')!.getAttribute('stroke');
+    const s2 = c2.querySelector('circle')!.getAttribute('stroke');
+    expect(s2).not.toBe(s1);
+    expect(s2).toContain('color-mix');
+  });
+
   it('llama onClick al hacer click', () => {
     const onClick = vi.fn();
     const { container } = renderBead({ onClick });

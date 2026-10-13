@@ -1,10 +1,15 @@
 import { useState } from 'react';
 import ExerciseRunner from './components/activities/ExerciseRunner';
-import type { ExerciseType, DifficultyLevel, Manipulative } from './types';
+import type { ExerciseType, DifficultyLevel, Manipulative, AnswerMode } from './types';
 
 const TYPES: { value: ExerciseType; label: string }[] = [
   { value: 'represent', label: 'Representar' },
   { value: 'identify', label: 'Identificar' },
+];
+
+const MODES: { value: AnswerMode; label: string }[] = [
+  { value: 'free', label: 'Libre' },
+  { value: 'drag', label: 'Con opciones' },
 ];
 
 const MANIPULATIVES: { value: Manipulative; label: string; for: ExerciseType[] }[] = [
@@ -19,6 +24,7 @@ export default function App() {
   const [type, setType] = useState<ExerciseType>('represent');
   const [manipulative, setManipulative] = useState<Manipulative>('rekenrek');
   const [difficulty, setDifficulty] = useState<DifficultyLevel>(2);
+  const [mode, setMode] = useState<AnswerMode>('free');
   const [done, setDone] = useState(false);
   const [runId, setRunId] = useState(0);
 
@@ -85,6 +91,21 @@ export default function App() {
             </option>
           ))}
         </select>
+        <select
+          aria-label="Modo"
+          value={mode}
+          onChange={(e) => {
+            setMode(e.target.value as AnswerMode);
+            restart();
+          }}
+          className={select}
+        >
+          {MODES.map((m) => (
+            <option key={m.value} value={m.value}>
+              {m.label}
+            </option>
+          ))}
+        </select>
       </div>
 
       <div className="mt-4">
@@ -100,10 +121,11 @@ export default function App() {
           </div>
         ) : (
           <ExerciseRunner
-            key={`${type}-${safeManipulative}-${difficulty}-${runId}`}
+            key={`${type}-${safeManipulative}-${difficulty}-${mode}-${runId}`}
             exerciseType={type}
             difficulty={difficulty}
             manipulative={safeManipulative}
+            answerMode={mode}
             exerciseCount={3}
             onComplete={() => setDone(true)}
           />

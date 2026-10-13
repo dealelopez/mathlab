@@ -120,7 +120,7 @@ export function generateIdentify(
 3. Setup: `initialValue: shownValue`, `readOnly: true`.
 4. Instruction: `"¿Qué número muestra el ${manipulativeName}?"`.
 5. `correctAnswer: shownValue`.
-6. `answerMode: 'free'` siempre (el niño escribe la respuesta).
+6. `answerMode`: 'free' por defecto (el niño escribe); 'drag' muestra opciones con números completos.
 7. `id`: generado con `generateUniqueId('identify-' + difficulty)`.
 8. `deduplicationKey`: `identify-${difficulty}-${manipulative}-${shownValue}`.
 

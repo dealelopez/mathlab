@@ -18,6 +18,13 @@ describe('AnswerChip', () => {
     expect(getByTestId('answer-chip')).toHaveTextContent('5');
   });
 
+  it('soporta números de varias cifras (17, 142)', () => {
+    const { getByTestId, rerender } = render(<AnswerChip id="c1" value={17} />);
+    expect(getByTestId('answer-chip')).toHaveTextContent('17');
+    rerender(<AnswerChip id="c1" value={142} />);
+    expect(getByTestId('answer-chip')).toHaveTextContent('142');
+  });
+
   it('usa label cuando se pasa', () => {
     const { getByTestId } = render(<AnswerChip id="c1" value={5} label="cinco" />);
     expect(getByTestId('answer-chip')).toHaveTextContent('cinco');

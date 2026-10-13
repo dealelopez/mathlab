@@ -401,6 +401,106 @@ function SeriesView({
   );
 }
 
+/** Identify con opciones: estado del hueco + chips usados. */
+function IdentifyDrag({
+  exercise,
+  answer,
+  onAnswer,
+}: {
+  exercise: Exercise;
+  answer: number | null;
+  onAnswer: (a: Answer | null) => void;
+}) {
+  const [usedIds, setUsedIds] = useState<string[]>([]);
+
+  const handleDropSlot = (dropped: number) => {
+    const options = exercise.setup.options ?? [];
+    const prev = answer;
+    // Libera el chip que ocupaba el hueco, si lo había
+    let nextUsed = usedIds;
+    if (prev !== null) {
+      const prevIdx = options.findIndex((opt, i) => opt === prev && usedIds.includes(`chip-${i}`));
+      if (prevIdx >= 0) {
+        nextUsed = usedIds.filter((x) => x !== `chip-${prevIdx}`);
+        setUsedIds(nextUsed);
+      }
+    }
+    const chipIdx = options.findIndex((opt, i) => opt === dropped && !nextUsed.includes(`chip-${i}`));
+    if (chipIdx >= 0) setUsedIds((ids) => [...ids, `chip-${chipIdx}`]);
+    onAnswer(dropped);
+  };
+
+  const handleClearSlot = () => {
+    if (answer === null) return;
+    const options = exercise.setup.options ?? [];
+    const usedIdx = options.findIndex((opt, i) => opt === answer && usedIds.includes(`chip-${i}`));
+    if (usedIdx >= 0) {
+      const id = `chip-${usedIdx}`;
+      setUsedIds((ids) => ids.filter((x) => x !== id));
+    }
+    onAnswer(null);
+  };
+
+  return (
+    <DragDropProvider>
+      <IdentifyDragInner
+        options={exercise.setup.options ?? []}
+        value={answer}
+        usedIds={usedIds}
+        onDropSlot={handleDropSlot}
+        onClearSlot={handleClearSlot}
+      />
+    </DragDropProvider>
+  );
+}
+
+/** Interior del modo drag de identify: un hueco + chips con números completos. */
+function IdentifyDragInner({
+  options,
+  value,
+  usedIds,
+  onDropSlot,
+  onClearSlot,
+}: {
+  options: number[];
+  value: number | null;
+  usedIds: string[];
+  onDropSlot: (value: number) => void;
+  onClearSlot: () => void;
+}) {
+  const { setOnDrop } = useDragDrop();
+
+  useEffect(() => {
+    setOnDrop((slotId, dropped) => {
+      if (slotId === 'islot-0') onDropSlot(dropped);
+    });
+    return () => setOnDrop(null);
+  }, [setOnDrop, onDropSlot]);
+
+  return (
+    <div className="flex flex-col items-center gap-3">
+      <div
+        onClick={value !== null ? onClearSlot : undefined}
+        style={value !== null ? { cursor: 'pointer' } : undefined}
+        title={value !== null ? 'Toca para quitar' : undefined}
+      >
+        <AnswerSlot id="islot-0" value={value} onChange={() => {}} mode="drag-target" />
+      </div>
+      <div className="flex flex-wrap justify-center gap-2">
+        {options.map((opt, i) => (
+          <AnswerChip
+            key={`chip-${i}`}
+            id={`chip-${i}`}
+            value={opt}
+            used={usedIds.includes(`chip-${i}`)}
+          />
+        ))}
+      </div>
+      <p className="text-xs text-slate-500">Arrastra el número correcto al hueco.</p>
+    </div>
+  );
+}
+
 /** "Coloca el N en la recta": validación automática al colocar. */
 function PlacementView({
   exercise,
@@ -524,15 +624,24 @@ export default function ExerciseRunner({
         {current.type === 'identify' && (
           <div className="flex flex-col items-center gap-4">
             <ManipulativeView key={current.id} exercise={current} onAnswer={() => {}} />
-            <div className="flex flex-col items-center gap-2">
-              <span className="text-lg font-semibold">Tu respuesta:</span>
-              <DigitAnswer
-                value={typeof userAnswer === 'number' ? userAnswer : null}
-                onChange={handleAnswer}
-                maxDigits={3}
-                digitCount={String(current.setup.initialValue ?? 0).length}
+            {current.answerMode === 'drag' && (current.setup.options?.length ?? 0) > 0 ? (
+              <IdentifyDrag
+                key={`drag-${current.id}`}
+                exercise={current}
+                answer={typeof userAnswer === 'number' ? userAnswer : null}
+                onAnswer={handleAnswer}
               />
-            </div>
+            ) : (
+              <div className="flex flex-col items-center gap-2">
+                <span className="text-lg font-semibold">Tu respuesta:</span>
+                <DigitAnswer
+                  value={typeof userAnswer === 'number' ? userAnswer : null}
+                  onChange={handleAnswer}
+                  maxDigits={3}
+                  digitCount={String(current.setup.initialValue ?? 0).length}
+                />
+              </div>
+            )}
           </div>
         )}
         {current.type === 'decompose' && (

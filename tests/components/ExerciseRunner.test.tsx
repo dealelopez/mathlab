@@ -199,6 +199,66 @@ describe('ExerciseRunner', () => {
     expect(rows.some((r) => r.textContent === '0')).toBe(false);
   });
 
+  it('identify con opciones: chips con números completos y flujo drag correcto', () => {
+    const { container, getByTestId } = render(
+      <ExerciseRunner
+        exerciseType="identify"
+        difficulty={2}
+        manipulative="rekenrek"
+        answerMode="drag"
+      />,
+    );
+    const shown = Number(
+      getByTestId('rekenrek-total').textContent!.match(/Total: (\d+)/)![1],
+    );
+    // Hay varios chips con números completos, uno es el correcto
+    const chips = Array.from(container.querySelectorAll('[data-testid="answer-chip"]'));
+    expect(chips.length).toBeGreaterThan(1);
+    const right = chips.find((c) => c.textContent === String(shown))! as HTMLElement;
+    // Arrastra el chip correcto al hueco
+    const slot = container.querySelector('[data-slot-id="islot-0"]')! as HTMLElement;
+    fireEvent.pointerDown(right, { clientX: 100, clientY: 200, pointerId: 1, bubbles: true });
+    fireEvent.pointerMove(right, { clientX: 100, clientY: 100, pointerId: 1, bubbles: true });
+    const orig = document.elementFromPoint;
+    document.elementFromPoint = (() => slot) as unknown as typeof document.elementFromPoint;
+    try {
+      fireEvent.pointerUp(right, { clientX: 100, clientY: 100, pointerId: 1, bubbles: true });
+    } finally {
+      document.elementFromPoint = orig;
+    }
+    expect(slot.textContent).toBe(String(shown));
+    fireEvent.click(checkBtn(container));
+    expect(correctBanner(container)).toBeInTheDocument();
+  });
+
+  it('identify con opciones: chip incorrecto → feedback incorrect', () => {
+    const { container, getByTestId } = render(
+      <ExerciseRunner
+        exerciseType="identify"
+        difficulty={2}
+        manipulative="rekenrek"
+        answerMode="drag"
+      />,
+    );
+    const shown = Number(
+      getByTestId('rekenrek-total').textContent!.match(/Total: (\d+)/)![1],
+    );
+    const chips = Array.from(container.querySelectorAll('[data-testid="answer-chip"]'));
+    const wrong = chips.find((c) => c.textContent !== String(shown))! as HTMLElement;
+    const slot = container.querySelector('[data-slot-id="islot-0"]')! as HTMLElement;
+    fireEvent.pointerDown(wrong, { clientX: 100, clientY: 200, pointerId: 1, bubbles: true });
+    fireEvent.pointerMove(wrong, { clientX: 100, clientY: 100, pointerId: 1, bubbles: true });
+    const orig = document.elementFromPoint;
+    document.elementFromPoint = (() => slot) as unknown as typeof document.elementFromPoint;
+    try {
+      fireEvent.pointerUp(wrong, { clientX: 100, clientY: 100, pointerId: 1, bubbles: true });
+    } finally {
+      document.elementFromPoint = orig;
+    }
+    fireEvent.click(checkBtn(container));
+    expect(incorrectBanner(container)).toBeInTheDocument();
+  });
+
   it('identify: tantos huecos como cifras del valor mostrado', () => {
     const { container, getByTestId } = render(
       <ExerciseRunner exerciseType="identify" difficulty={2} manipulative="abacus" />,

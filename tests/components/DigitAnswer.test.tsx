@@ -89,6 +89,58 @@ describe('DigitAnswer', () => {
     expect(container.querySelectorAll('[data-testid="digit-row"]')).toHaveLength(3);
   });
 
+  it('huecos en horizontal, uno al lado del otro', () => {
+    const { getByTestId } = render(<DigitAnswer value={null} onChange={() => {}} digitCount={2} />);
+    const rows = getByTestId('digit-rows');
+    expect(rows.className).toContain('flex-row');
+    expect(rows.querySelectorAll('[data-testid="digit-row"]')).toHaveLength(2);
+  });
+
+  it('arrastrar una cifra sobre otra las reordena (42 → 24)', () => {
+    const { onChange, container } = setupControlled(42);
+    const filled = container.querySelectorAll('[data-testid="digit-row"][data-filled="true"]');
+    const row0 = filled[0]! as HTMLElement;
+    const row1 = filled[1]! as HTMLElement;
+    fireEvent.pointerDown(row0, { clientX: 100, clientY: 50, pointerId: 1, bubbles: true });
+    fireEvent.pointerMove(row0, { clientX: 160, clientY: 50, pointerId: 1, bubbles: true });
+    expect(row0).toHaveAttribute('data-dragging', 'true');
+    const orig = document.elementFromPoint;
+    document.elementFromPoint = (() => row1) as unknown as typeof document.elementFromPoint;
+    try {
+      fireEvent.pointerUp(row0, { clientX: 160, clientY: 50, pointerId: 1, bubbles: true });
+    } finally {
+      document.elementFromPoint = orig;
+    }
+    expect(onChange).toHaveBeenCalledWith(24);
+  });
+
+  it('soltar fuera de los huecos no cambia el valor', () => {
+    const { onChange, container } = setupControlled(42);
+    const row0 = container.querySelectorAll(
+      '[data-testid="digit-row"][data-filled="true"]',
+    )[0]! as HTMLElement;
+    fireEvent.pointerDown(row0, { clientX: 100, clientY: 50, pointerId: 1, bubbles: true });
+    fireEvent.pointerMove(row0, { clientX: 300, clientY: 200, pointerId: 1, bubbles: true });
+    const orig = document.elementFromPoint;
+    document.elementFromPoint = (() => null) as unknown as typeof document.elementFromPoint;
+    try {
+      fireEvent.pointerUp(row0, { clientX: 300, clientY: 200, pointerId: 1, bubbles: true });
+    } finally {
+      document.elementFromPoint = orig;
+    }
+    expect(onChange).not.toHaveBeenCalled();
+  });
+
+  it('toque sin arrastrar no cambia el valor', () => {
+    const { onChange, container } = setupControlled(42);
+    const row0 = container.querySelectorAll(
+      '[data-testid="digit-row"][data-filled="true"]',
+    )[0]! as HTMLElement;
+    fireEvent.pointerDown(row0, { clientX: 100, clientY: 50, pointerId: 1, bubbles: true });
+    fireEvent.pointerUp(row0, { clientX: 100, clientY: 50, pointerId: 1, bubbles: true });
+    expect(onChange).not.toHaveBeenCalled();
+  });
+
   it('filas rellenas: color aclarado y desactivadas (no cambian el valor)', () => {
     const { onChange, container } = setupControlled(7);
     const row = container.querySelector('[data-testid="digit-row"][data-filled="true"]')!;

@@ -13,6 +13,8 @@ interface BeadProps {
   onClick?: () => void;
   /** Clases CSS adicionales */
   className?: string;
+  /** Estilos inline adicionales (ej: transition para animar cx) */
+  style?: React.CSSProperties;
 }
 
 /** Oscurece un color hex (#rrggbb) para el borde. Fallback gris si no es hex. */
@@ -26,7 +28,7 @@ function darken(hex: string, amount = 0.25): string {
   return `rgb(${r}, ${g}, ${b})`;
 }
 
-export default function Bead({ cx, cy, r, color, active = false, onClick, className }: BeadProps) {
+export default function Bead({ cx, cy, r, color, active = false, onClick, className, style }: BeadProps) {
   return (
     <circle
       cx={cx}
@@ -37,7 +39,7 @@ export default function Bead({ cx, cy, r, color, active = false, onClick, classN
       strokeWidth={active ? 3 : 1.5}
       onClick={onClick}
       className={className}
-      style={onClick ? { cursor: 'pointer' } : undefined}
+      style={{ transition: 'cx 150ms ease', ...(onClick ? { cursor: 'pointer' } : undefined), ...style }}
     />
   );
 }

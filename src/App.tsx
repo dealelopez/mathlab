@@ -1,30 +1,26 @@
-import Bead from './components/primitives/Bead';
-import { usePointerDrag } from './hooks/usePointerDrag';
+import { useState } from 'react';
+import BeadRow from './components/primitives/BeadRow';
 
-// Demo temporal de la tarea 02. Se sustituye en la tarea 15 con la navegación real.
+// Demo temporal de la tarea 03. Se sustituye en la tarea 15 con la navegación real.
 export default function App() {
-  const { isDragging, delta, handlePointerDown } = usePointerDrag({ axis: 'both' });
+  const [rekenrek, setRekenrek] = useState(5);
+  const [abaco, setAbaco] = useState(7);
   return (
     <div className="p-4">
       <h1 className="text-2xl font-bold">Mathlab</h1>
-      <p>Demo temporal task-02: Beads + drag.</p>
+      <p>Demo temporal task-03: BeadRow.</p>
 
-      <svg width={320} height={80} className="mt-4 border">
-        <Bead cx={30} cy={40} r={14} color="#e53e3e" active />
-        <Bead cx={70} cy={40} r={14} color="#e53e3e" />
-        <Bead cx={110} cy={40} r={14} color="#ffffff" onClick={() => {}} />
-      </svg>
-
-      <div
-        onPointerDown={handlePointerDown}
-        style={{ touchAction: 'none' }}
-        className="mt-4 inline-block cursor-grab border px-4 py-2 select-none"
-      >
-        {isDragging ? 'Arrastrando…' : 'Arrástrame (mouse o touch)'}
+      <div className="mt-4">
+        <h2 className="font-semibold">Rekenrek (5 rojas + 5 blancas)</h2>
+        <BeadRow value={rekenrek} onChange={setRekenrek} colorSplit={5} colors={['#EF4444', '#FAFAFA']} />
+        <p className="font-mono text-sm">value: {rekenrek}</p>
       </div>
-      <p className="mt-2 font-mono text-sm">
-        delta: x={delta.x}, y={delta.y}
-      </p>
+
+      <div className="mt-4">
+        <h2 className="font-semibold">Ábaco (10 azules)</h2>
+        <BeadRow value={abaco} onChange={setAbaco} colorSplit={10} colors={['#3B82F6']} />
+        <p className="font-mono text-sm">value: {abaco}</p>
+      </div>
     </div>
   );
 }

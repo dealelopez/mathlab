@@ -130,11 +130,9 @@ export default function AbacusTutorial({ onComplete, onBack }: AbacusTutorialPro
   };
 
   return (
-    <div className="max-w-md rounded-lg border p-4">
+    <div className="max-w-md">
+      <div className="rounded-lg border p-4">
       <div className="flex items-center justify-between">
-        <button onClick={onBack} className="cursor-pointer text-sm text-slate-600 underline">
-          Volver
-        </button>
         <div data-testid="tutorial-progress" className="flex gap-1.5">
           {STEPS.map((_, i) => (
             <span
@@ -185,6 +183,15 @@ export default function AbacusTutorial({ onComplete, onBack }: AbacusTutorialPro
           className="cursor-pointer rounded bg-blue-600 px-3 py-1 text-white disabled:cursor-not-allowed disabled:opacity-40"
         >
           Siguiente
+        </button>
+      </div>
+      </div>
+      <div className="mt-3 text-center">
+        <button
+          onClick={onBack}
+          className="cursor-pointer text-sm text-slate-600 underline"
+        >
+          Salir del tutorial
         </button>
       </div>
     </div>

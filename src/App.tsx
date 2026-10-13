@@ -1,65 +1,35 @@
 import { useState } from 'react';
-import Abacus from './components/manipulatives/Abacus';
-import AbacusTutorial from './components/tutorial/AbacusTutorial';
+import TenFrame from './components/manipulatives/TenFrame';
 
-// Demo temporal de la tarea 05. Se sustituye en la tarea 15 con la navegación real.
+// Demo temporal de la tarea 06. Se sustituye en la tarea 15 con la navegación real.
 export default function App() {
-  const [showTutorial, setShowTutorial] = useState(false);
-  const [number, setNumber] = useState(347);
-  const [done, setDone] = useState(false);
+  const [frameCount, setFrameCount] = useState<1 | 2>(1);
+  const [value, setValue] = useState(7);
+
+  const changeFrames = (n: 1 | 2) => {
+    setFrameCount(n);
+    setValue((v) => Math.min(v, n * 10));
+  };
 
   return (
     <div className="p-4">
       <h1 className="text-2xl font-bold">Mathlab</h1>
-      <p>Demo temporal task-05: Ábaco + tutorial.</p>
+      <p>Demo temporal task-06: TenFrame.</p>
 
-      <div className="mt-4">
-        <button
-          onClick={() => {
-            setShowTutorial((s) => !s);
-            setDone(false);
-          }}
-          className="cursor-pointer rounded bg-blue-600 px-3 py-1 text-white"
-        >
-          {showTutorial ? 'Ver ábaco libre' : 'Abrir tutorial'}
-        </button>
+      <div className="mt-4 flex gap-2">
+        {([1, 2] as const).map((n) => (
+          <button
+            key={n}
+            onClick={() => changeFrames(n)}
+            className={`cursor-pointer rounded border px-3 py-1 ${frameCount === n ? 'bg-indigo-200 font-bold' : ''}`}
+          >
+            {n} {n === 1 ? 'marco (hasta 10)' : 'marcos (hasta 20)'}
+          </button>
+        ))}
       </div>
 
       <div className="mt-4">
-        {showTutorial ? (
-          done ? (
-            <div>
-              <p className="font-semibold text-green-700">¡Tutorial completado!</p>
-              <button
-                onClick={() => {
-                  setDone(false);
-                  setShowTutorial(false);
-                }}
-                className="mt-2 cursor-pointer rounded border px-3 py-1"
-              >
-                Volver al ábaco
-              </button>
-            </div>
-          ) : (
-            <AbacusTutorial
-              onComplete={() => setDone(true)}
-              onBack={() => setShowTutorial(false)}
-            />
-          )
-        ) : (
-          <div>
-            <Abacus
-              columns={[
-                { label: 'C', color: '#3B82F6' },
-                { label: 'D', color: '#10B981' },
-                { label: 'U', color: '#EF4444' },
-              ]}
-              value={number}
-              onChange={setNumber}
-            />
-            <p className="mt-2 font-mono text-sm">número: {number}</p>
-          </div>
-        )}
+        <TenFrame frames={frameCount} value={value} onChange={setValue} />
       </div>
     </div>
   );

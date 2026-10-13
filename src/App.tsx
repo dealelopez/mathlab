@@ -19,7 +19,7 @@ export default function App() {
             setShowTutorial((s) => !s);
             setDone(false);
           }}
-          className="rounded bg-blue-600 px-3 py-1 text-white"
+          className="cursor-pointer rounded bg-blue-600 px-3 py-1 text-white"
         >
           {showTutorial ? 'Ver ábaco libre' : 'Abrir tutorial'}
         </button>
@@ -35,7 +35,7 @@ export default function App() {
                   setDone(false);
                   setShowTutorial(false);
                 }}
-                className="mt-2 rounded border px-3 py-1"
+                className="mt-2 cursor-pointer rounded border px-3 py-1"
               >
                 Volver al ábaco
               </button>

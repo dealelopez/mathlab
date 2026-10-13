@@ -132,7 +132,7 @@ export default function AbacusTutorial({ onComplete, onBack }: AbacusTutorialPro
   return (
     <div className="max-w-md rounded-lg border p-4">
       <div className="flex items-center justify-between">
-        <button onClick={onBack} className="text-sm text-slate-600 underline">
+        <button onClick={onBack} className="cursor-pointer text-sm text-slate-600 underline">
           Volver
         </button>
         <div data-testid="tutorial-progress" className="flex gap-1.5">
@@ -175,14 +175,14 @@ export default function AbacusTutorial({ onComplete, onBack }: AbacusTutorialPro
         <button
           onClick={goBack}
           disabled={stepIndex === 0}
-          className="rounded border px-3 py-1 disabled:opacity-40"
+          className="cursor-pointer rounded border px-3 py-1 disabled:cursor-not-allowed disabled:opacity-40"
         >
           Anterior
         </button>
         <button
           onClick={goNext}
           disabled={!correct}
-          className="rounded bg-blue-600 px-3 py-1 text-white disabled:opacity-40"
+          className="cursor-pointer rounded bg-blue-600 px-3 py-1 text-white disabled:cursor-not-allowed disabled:opacity-40"
         >
           Siguiente
         </button>

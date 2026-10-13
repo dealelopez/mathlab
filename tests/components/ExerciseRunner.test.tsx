@@ -183,6 +183,15 @@ describe('ExerciseRunner', () => {
     expect(incorrectBanner(container)).toBeInTheDocument();
   });
 
+  it('identify: tantos huecos como cifras del valor mostrado', () => {
+    const { container, getByTestId } = render(
+      <ExerciseRunner exerciseType="identify" difficulty={2} manipulative="abacus" />,
+    );
+    const shown = Number(getByTestId('abacus-number').textContent);
+    const expectedRows = String(shown).length;
+    expect(container.querySelectorAll('[data-testid="digit-row"]')).toHaveLength(expectedRows);
+  });
+
   it('identify + ábaco: número fijo visible y entrada por dígitos', () => {
     const { container, getByTestId } = render(
       <ExerciseRunner exerciseType="identify" difficulty={2} manipulative="abacus" />,

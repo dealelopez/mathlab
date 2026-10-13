@@ -530,6 +530,7 @@ export default function ExerciseRunner({
                 value={typeof userAnswer === 'number' ? userAnswer : null}
                 onChange={(v) => handleAnswer((v ?? 0) as Answer)}
                 maxDigits={3}
+                digitCount={String(current.setup.initialValue ?? 0).length}
               />
             </div>
           </div>

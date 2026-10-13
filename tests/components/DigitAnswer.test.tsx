@@ -69,6 +69,26 @@ describe('DigitAnswer', () => {
     expect(getByTestId('digit-5').hasAttribute('disabled')).toBe(true);
   });
 
+  it('digitCount: muestra los huecos esperados desde el inicio', () => {
+    const { container } = render(<DigitAnswer value={null} onChange={() => {}} digitCount={2} />);
+    const rows = container.querySelectorAll('[data-testid="digit-row"]');
+    expect(rows).toHaveLength(2);
+    rows.forEach((r) => expect(r).toHaveAttribute('data-filled', 'false'));
+  });
+
+  it('digitCount: al rellenar todos la tira se desactiva', () => {
+    const { container, getByTestId } = render(
+      <DigitAnswer value={7} onChange={() => {}} digitCount={1} />,
+    );
+    expect(container.querySelectorAll('[data-testid="digit-row"]')).toHaveLength(1);
+    expect(getByTestId('digit-5').hasAttribute('disabled')).toBe(true);
+  });
+
+  it('digitCount={3}: tres huecos para centenas', () => {
+    const { container } = render(<DigitAnswer value={null} onChange={() => {}} digitCount={3} />);
+    expect(container.querySelectorAll('[data-testid="digit-row"]')).toHaveLength(3);
+  });
+
   it('filas rellenas: color aclarado y desactivadas (no cambian el valor)', () => {
     const { onChange, container } = setupControlled(7);
     const row = container.querySelector('[data-testid="digit-row"][data-filled="true"]')!;

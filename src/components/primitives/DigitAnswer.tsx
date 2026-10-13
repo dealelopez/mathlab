@@ -5,6 +5,11 @@ export interface DigitAnswerProps {
   onChange: (value: number | null) => void;
   /** Máximo de cifras (default 3) */
   maxDigits?: number;
+  /**
+   * Nº de huecos a mostrar (cifras esperadas). Si se omite, los huecos
+   * aparecen dinámicamente (uno vacío tras la última cifra).
+   */
+  digitCount?: number;
   /** Estado de feedback para teñir las filas */
   status?: 'correct' | 'incorrect' | null;
 }
@@ -18,10 +23,13 @@ export default function DigitAnswer({
   value,
   onChange,
   maxDigits = 3,
+  digitCount,
   status = null,
 }: DigitAnswerProps) {
   const digits = value === null ? '' : String(value);
-  const full = digits.length >= maxDigits;
+  // Nº de filas: fijas si se conoce la cifra esperada, dinámicas si no.
+  const rowCount = Math.min(digitCount ?? digits.length + 1, Math.max(maxDigits, 1));
+  const full = digits.length >= rowCount;
 
   const append = (d: number) => {
     if (full) return;
@@ -43,24 +51,26 @@ export default function DigitAnswer({
 
   return (
     <div className="inline-flex flex-col items-center gap-2 select-none">
-      {digits.split('').map((d, i) => (
-        <div
-          key={i}
-          data-testid="digit-row"
-          data-filled="true"
-          className={`flex min-h-12 min-w-12 items-center justify-center rounded-lg border-2 px-3 py-1 text-2xl font-bold tabular-nums ${filledStyle}`}
-        >
-          {d}
-        </div>
-      ))}
-      {!full && (
-        <div
-          data-testid="digit-row"
-          data-filled="false"
-          className="flex min-h-12 min-w-12 items-center justify-center rounded-lg border-2 border-dashed border-slate-400 bg-slate-50 px-3 py-1 text-2xl font-bold text-slate-300 tabular-nums"
-        >
-          ?
-        </div>
+      {Array.from({ length: rowCount }, (_, i) =>
+        i < digits.length ? (
+          <div
+            key={i}
+            data-testid="digit-row"
+            data-filled="true"
+            className={`flex min-h-12 min-w-12 items-center justify-center rounded-lg border-2 px-3 py-1 text-2xl font-bold tabular-nums ${filledStyle}`}
+          >
+            {digits[i]}
+          </div>
+        ) : (
+          <div
+            key={i}
+            data-testid="digit-row"
+            data-filled="false"
+            className="flex min-h-12 min-w-12 items-center justify-center rounded-lg border-2 border-dashed border-slate-400 bg-slate-50 px-3 py-1 text-2xl font-bold text-slate-300 tabular-nums"
+          >
+            ?
+          </div>
+        ),
       )}
       <div data-testid="digit-strip" className="flex max-w-64 flex-wrap justify-center gap-1.5">
         {[1, 2, 3, 4, 5, 6, 7, 8, 9, 0].map((d) => (

@@ -191,7 +191,7 @@ export default function DigitAnswer({
           ),
         )}
       </div>
-      <div data-testid="digit-strip" className="flex max-w-64 flex-wrap justify-center gap-1.5">
+      <div data-testid="digit-strip" className="flex max-w-full flex-nowrap justify-center gap-1 overflow-x-auto">
         {[1, 2, 3, 4, 5, 6, 7, 8, 9, 0].map((d) => {
           const dragging = drag?.kind === 'strip' && drag.digit === d;
           return (
@@ -211,7 +211,7 @@ export default function DigitAnswer({
                 zIndex: dragging ? 10 : undefined,
                 position: dragging ? 'relative' : undefined,
               }}
-              className="min-h-12 min-w-12 cursor-pointer rounded-lg border bg-white px-3 py-2 text-xl font-bold tabular-nums disabled:cursor-not-allowed disabled:opacity-40"
+              className="min-h-12 min-w-11 shrink-0 cursor-pointer rounded-lg border bg-white px-2 py-2 text-xl font-bold tabular-nums disabled:cursor-not-allowed disabled:opacity-40"
             >
               {d}
             </button>

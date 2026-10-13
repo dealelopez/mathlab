@@ -22,6 +22,14 @@ function setupControlled(initial: number | null = null) {
 }
 
 describe('DigitAnswer', () => {
+  it('tira 0-9 en una única fila (sin wrap)', () => {
+    const { getByTestId } = setupControlled();
+    const strip = getByTestId('digit-strip');
+    expect(strip.className).toContain('flex-nowrap');
+    expect(strip.className).not.toContain('flex-wrap');
+    expect(strip.querySelectorAll('button')).toHaveLength(10);
+  });
+
   it('vacío: una fila activa + tira 0-9 + botón borrar', () => {
     const { getByTestId } = setupControlled();
     expect(getByTestId('digit-strip')).toBeInTheDocument();

@@ -1,25 +1,41 @@
 import { useState } from 'react';
-import BeadRow from './components/primitives/BeadRow';
+import Rekenrek from './components/manipulatives/Rekenrek';
 
-// Demo temporal de la tarea 03. Se sustituye en la tarea 15 con la navegación real.
+// Demo temporal de la tarea 04. Se sustituye en la tarea 15 con la navegación real.
 export default function App() {
-  const [rekenrek, setRekenrek] = useState(5);
-  const [abaco, setAbaco] = useState(7);
+  const [rowCount, setRowCount] = useState(2);
+  const [values, setValues] = useState<number[]>([7, 3]);
+
+  const changeRows = (n: number) => {
+    setRowCount(n);
+    setValues((prev) =>
+      Array.from({ length: n }, (_, i) => (i < prev.length ? prev[i]! : 0)),
+    );
+  };
+
   return (
     <div className="p-4">
       <h1 className="text-2xl font-bold">Mathlab</h1>
-      <p>Demo temporal task-03: BeadRow.</p>
+      <p>Demo temporal task-04: Rekenrek.</p>
 
-      <div className="mt-4">
-        <h2 className="font-semibold">Rekenrek (5 rojas + 5 blancas)</h2>
-        <BeadRow value={rekenrek} onChange={setRekenrek} colorSplit={5} colors={['#EF4444', '#FAFAFA']} />
-        <p className="font-mono text-sm">value: {rekenrek}</p>
+      <div className="mt-4 flex gap-2">
+        {[1, 2, 5, 10].map((n) => (
+          <button
+            key={n}
+            onClick={() => changeRows(n)}
+            className={`rounded border px-3 py-1 ${rowCount === n ? 'bg-amber-200 font-bold' : ''}`}
+          >
+            {n} {n === 1 ? 'fila' : 'filas'}
+          </button>
+        ))}
       </div>
 
       <div className="mt-4">
-        <h2 className="font-semibold">Ábaco (10 azules)</h2>
-        <BeadRow value={abaco} onChange={setAbaco} colorSplit={10} colors={['#3B82F6']} />
-        <p className="font-mono text-sm">value: {abaco}</p>
+        <Rekenrek
+          rows={rowCount}
+          value={values}
+          onChange={(v) => setValues(v)}
+        />
       </div>
     </div>
   );

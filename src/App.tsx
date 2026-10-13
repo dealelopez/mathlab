@@ -1,86 +1,36 @@
-import { useEffect, useState } from 'react';
-import { DragDropProvider, useDragDrop } from './components/primitives/DragDropContext';
-import AnswerChip from './components/primitives/AnswerChip';
-import AnswerSlot from './components/primitives/AnswerSlot';
+import { useState } from 'react';
+import ExerciseRunner from './components/activities/ExerciseRunner';
 
-const CHIPS = [
-  { id: 'chip-3', value: 3 },
-  { id: 'chip-5', value: 5 },
-  { id: 'chip-8', value: 8 },
-];
-
-/** Demo drag: registra el onDrop del contexto y pinta slots usados. */
-function DragDemo() {
-  const { setOnDrop } = useDragDrop();
-  const [slots, setSlots] = useState<(number | null)[]>([null, null]);
-
-  useEffect(() => {
-    setOnDrop((slotId, value) => {
-      const idx = Number(slotId);
-      if (Number.isInteger(idx) && idx >= 0 && idx < 2) {
-        setSlots((prev) => {
-          const next = [...prev];
-          next[idx] = value;
-          return next;
-        });
-      }
-    });
-    return () => setOnDrop(null);
-  }, [setOnDrop]);
-
-  return (
-    <div>
-      <div className="flex gap-2">
-        {CHIPS.map((c) => (
-          <AnswerChip key={c.id} id={c.id} value={c.value} used={slots.includes(c.value)} />
-        ))}
-      </div>
-      <div className="mt-3 flex gap-2">
-        {slots.map((v, i) => (
-          <AnswerSlot
-            key={i}
-            id={String(i)}
-            value={v}
-            onChange={(nv) =>
-              setSlots((prev) => {
-                const next = [...prev];
-                next[i] = nv;
-                return next;
-              })
-            }
-            mode="drag-target"
-          />
-        ))}
-      </div>
-      <button
-        onClick={() => setSlots([null, null])}
-        className="mt-3 cursor-pointer rounded border px-3 py-1"
-      >
-        Limpiar
-      </button>
-    </div>
-  );
-}
-
-// Demo temporal de la tarea 08. Se sustituye en la tarea 15 con la navegación real.
+// Demo temporal de la tarea 10. Se sustituye en la tarea 15 con la navegación real.
 export default function App() {
-  const [free, setFree] = useState<number | null>(null);
+  const [done, setDone] = useState(false);
 
   return (
     <div className="p-4">
       <h1 className="text-2xl font-bold">Mathlab</h1>
-      <p>Demo temporal task-08: respuesta (chips + slots + pad).</p>
+      <p>Demo temporal task-10: sesión de ejercicios.</p>
 
-      <DragDropProvider>
-        <div className="mt-4">
-          <h2 className="font-semibold">Arrastra chips a los huecos</h2>
-          <DragDemo />
-        </div>
-      </DragDropProvider>
-
-      <div className="mt-6">
-        <h2 className="font-semibold">Hueco libre con teclado</h2>
-        <AnswerSlot id="free" value={free} onChange={setFree} mode="input" />
+      <div className="mt-4">
+        {done ? (
+          <div>
+            <p className="font-semibold text-green-700">¡Sesión completada!</p>
+            <button
+              onClick={() => setDone(false)}
+              className="mt-2 cursor-pointer rounded border px-3 py-1"
+            >
+              Empezar de nuevo
+            </button>
+          </div>
+        ) : (
+          <ExerciseRunner
+            key={String(done)}
+            exerciseType="represent"
+            difficulty={2}
+            exerciseCount={3}
+            onComplete={() => setDone(true)}
+            onBack={() => {}}
+          />
+        )}
       </div>
     </div>
   );

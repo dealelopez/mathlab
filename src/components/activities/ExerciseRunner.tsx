@@ -523,12 +523,15 @@ export default function ExerciseRunner({
         {current.type === 'identify' && (
           <div className="flex flex-col items-center gap-4">
             <ManipulativeView key={current.id} exercise={current} onAnswer={() => {}} />
-            <AnswerSlot
-              id="identify-answer"
-              value={typeof userAnswer === 'number' ? userAnswer : null}
-              onChange={(v) => handleAnswer((v ?? 0) as Answer)}
-              mode="input"
-            />
+            <div className="flex items-center gap-2">
+              <span className="text-lg font-semibold">Tu respuesta:</span>
+              <AnswerSlot
+                id="identify-answer"
+                value={typeof userAnswer === 'number' ? userAnswer : null}
+                onChange={(v) => handleAnswer((v ?? 0) as Answer)}
+                mode="input"
+              />
+            </div>
           </div>
         )}
         {current.type === 'decompose' && (

@@ -7,6 +7,8 @@ import {
   numberToDigits,
   digitsToNumber,
   distributeToRows,
+  valueToX,
+  xToValue,
 } from '../../src/lib/math';
 
 describe('randomInt', () => {
@@ -92,6 +94,35 @@ describe('digitsToNumber', () => {
   });
 });
 
+describe('valueToX', () => {
+  it('5 en rango [0,10] con línea de 0 a 400 → 200', () => {
+    expect(valueToX(5, 0, 10, 0, 400)).toBe(200);
+  });
+
+  it('mapea extremos correctamente', () => {
+    expect(valueToX(0, 0, 10, 20, 420)).toBe(20);
+    expect(valueToX(10, 0, 10, 20, 420)).toBe(420);
+  });
+});
+
+describe('xToValue', () => {
+  it('200 en rango [0,10] con línea de 0 a 400, step=1 → 5', () => {
+    expect(xToValue(200, 0, 10, 0, 400, 1)).toBe(5);
+  });
+
+  it('210 en rango [0,10] con step=1 → 5 (snap)', () => {
+    expect(xToValue(210, 0, 10, 0, 400, 1)).toBe(5);
+  });
+
+  it('250 en rango [0,10] con step=1 → 6 (más cerca de 6 que de 5)', () => {
+    expect(xToValue(250, 0, 10, 0, 400, 1)).toBe(6);
+  });
+
+  it('recorta al rango [min, max]', () => {
+    expect(xToValue(-50, 0, 10, 0, 400, 1)).toBe(0);
+    expect(xToValue(500, 0, 10, 0, 400, 1)).toBe(10);
+  });
+});
 describe('distributeToRows', () => {
   it('distribuye correctamente', () => {
     expect(distributeToRows(15, 2, 10)).toEqual([10, 5]);

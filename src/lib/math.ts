@@ -77,3 +77,39 @@ export function distributeToRows(total: number, rows: number, maxPerRow: number)
   }
   return result;
 }
+
+/**
+ * Convierte un valor de la recta numérica a coordenada X del SVG.
+ * Ej: valueToX(5, 0, 10, 0, 400) → 200
+ */
+export function valueToX(
+  value: number,
+  min: number,
+  max: number,
+  lineStart: number,
+  lineEnd: number,
+): number {
+  if (max === min) return lineStart;
+  return lineStart + ((value - min) / (max - min)) * (lineEnd - lineStart);
+}
+
+/**
+ * Convierte una coordenada X del SVG a valor, con snap al múltiplo
+ * de `step` más cercano y recorte al rango [min, max].
+ * Ej: xToValue(250, 0, 10, 0, 400, 1) → 6
+ */
+export function xToValue(
+  x: number,
+  min: number,
+  max: number,
+  lineStart: number,
+  lineEnd: number,
+  step: number,
+): number {
+  const safeStep = step > 0 ? step : 1;
+  const raw = min + ((x - lineStart) / (lineEnd - lineStart)) * (max - min);
+  const snapped = Math.round(raw / safeStep) * safeStep;
+  const clamped = Math.min(max, Math.max(min, snapped));
+  const decimals = (String(safeStep).split('.')[1] ?? '').length;
+  return Number(clamped.toFixed(decimals));
+}

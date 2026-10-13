@@ -1,35 +1,35 @@
 import { useState } from 'react';
-import TenFrame from './components/manipulatives/TenFrame';
+import NumberLine from './components/manipulatives/NumberLine';
 
-// Demo temporal de la tarea 06. Se sustituye en la tarea 15 con la navegación real.
+// Demo temporal de la tarea 07. Se sustituye en la tarea 15 con la navegación real.
 export default function App() {
-  const [frameCount, setFrameCount] = useState<1 | 2>(1);
-  const [value, setValue] = useState(7);
-
-  const changeFrames = (n: 1 | 2) => {
-    setFrameCount(n);
-    setValue((v) => Math.min(v, n * 10));
-  };
+  const [marker, setMarker] = useState(7);
 
   return (
     <div className="p-4">
       <h1 className="text-2xl font-bold">Mathlab</h1>
-      <p>Demo temporal task-06: TenFrame.</p>
-
-      <div className="mt-4 flex gap-2">
-        {([1, 2] as const).map((n) => (
-          <button
-            key={n}
-            onClick={() => changeFrames(n)}
-            className={`cursor-pointer rounded border px-3 py-1 ${frameCount === n ? 'bg-indigo-200 font-bold' : ''}`}
-          >
-            {n} {n === 1 ? 'marco (hasta 10)' : 'marcos (hasta 20)'}
-          </button>
-        ))}
-      </div>
+      <p>Demo temporal task-07: recta numérica.</p>
 
       <div className="mt-4">
-        <TenFrame frames={frameCount} value={value} onChange={setValue} />
+        <NumberLine
+          min={0}
+          max={20}
+          step={1}
+          interactive="place"
+          markers={[{ position: marker, color: '#EF4444', label: String(marker) }]}
+          onPlaceMarker={setMarker}
+          jumps={[
+            { from: 3, to: 6, color: '#3B82F6' },
+            { from: 6, to: 10, color: '#10B981' },
+          ]}
+        />
+        <p className="mt-2 font-mono text-sm">marcador: {marker}</p>
+        <button
+          onClick={() => setMarker(7)}
+          className="mt-2 cursor-pointer rounded border px-3 py-1"
+        >
+          Restablecer
+        </button>
       </div>
     </div>
   );

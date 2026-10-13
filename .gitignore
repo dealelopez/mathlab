@@ -1,0 +1,14 @@
+# dependencias
+node_modules/
+dist/
+
+# build / coverage
+coverage/
+
+# entorno
+.env
+.env.local
+.DS_Store
+
+# tsc
+*.tsbuildinfo

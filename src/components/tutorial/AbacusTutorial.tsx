@@ -132,25 +132,7 @@ export default function AbacusTutorial({ onComplete, onBack }: AbacusTutorialPro
   return (
     <div className="max-w-md">
       <div className="rounded-lg border p-4">
-      <div className="flex items-center justify-between">
-        <div data-testid="tutorial-progress" className="flex gap-1.5">
-          {STEPS.map((_, i) => (
-            <span
-              key={i}
-              data-testid={`progress-dot-${i + 1}`}
-              aria-current={i === stepIndex ? 'step' : undefined}
-              className={`inline-block h-2.5 w-2.5 rounded-full ${
-                i === stepIndex ? 'bg-blue-600' : i < stepIndex ? 'bg-blue-300' : 'bg-slate-300'
-              }`}
-            />
-          ))}
-        </div>
-        <span className="text-sm tabular-nums">
-          {stepIndex + 1} / {STEPS.length}
-        </span>
-      </div>
-
-      <h2 data-testid="tutorial-title" className="mt-3 text-xl font-bold">
+      <h2 data-testid="tutorial-title" className="text-xl font-bold">
         {step.title}
       </h2>
       <p className="mt-1 text-slate-700">{step.description}</p>
@@ -186,7 +168,22 @@ export default function AbacusTutorial({ onComplete, onBack }: AbacusTutorialPro
         </button>
       </div>
       </div>
-      <div className="mt-3 text-center">
+      <div className="mt-3 flex flex-col items-center gap-1.5">
+        <div data-testid="tutorial-progress" className="flex justify-center gap-1.5">
+          {STEPS.map((_, i) => (
+            <span
+              key={i}
+              data-testid={`progress-dot-${i + 1}`}
+              aria-current={i === stepIndex ? 'step' : undefined}
+              className={`inline-block h-2.5 w-2.5 rounded-full ${
+                i === stepIndex ? 'bg-blue-600' : i < stepIndex ? 'bg-blue-300' : 'bg-slate-300'
+              }`}
+            />
+          ))}
+        </div>
+        <span className="text-sm text-slate-600 tabular-nums">
+          Paso {stepIndex + 1} de {STEPS.length}
+        </span>
         <button
           onClick={onBack}
           className="cursor-pointer text-sm text-slate-600 underline"

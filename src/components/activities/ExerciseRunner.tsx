@@ -14,6 +14,7 @@ import TenFrame from '../manipulatives/TenFrame';
 import NumberLine from '../manipulatives/NumberLine';
 import AnswerSlot from '../primitives/AnswerSlot';
 import AnswerChip from '../primitives/AnswerChip';
+import DigitAnswer from '../primitives/DigitAnswer';
 import { DragDropProvider, useDragDrop } from '../primitives/DragDropContext';
 
 export interface ExerciseRunnerProps {
@@ -523,13 +524,12 @@ export default function ExerciseRunner({
         {current.type === 'identify' && (
           <div className="flex flex-col items-center gap-4">
             <ManipulativeView key={current.id} exercise={current} onAnswer={() => {}} />
-            <div className="flex items-center gap-2">
+            <div className="flex flex-col items-center gap-2">
               <span className="text-lg font-semibold">Tu respuesta:</span>
-              <AnswerSlot
-                id="identify-answer"
+              <DigitAnswer
                 value={typeof userAnswer === 'number' ? userAnswer : null}
                 onChange={(v) => handleAnswer((v ?? 0) as Answer)}
-                mode="input"
+                maxDigits={3}
               />
             </div>
           </div>

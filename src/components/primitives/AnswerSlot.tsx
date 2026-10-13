@@ -67,7 +67,7 @@ export default function AnswerSlot({
         }}
         className={`flex items-center justify-center rounded-lg border-2 text-2xl font-bold tabular-nums ${border}`}
       >
-        {value === null ? placeholder : value}
+        {mode === 'input' && padOpen ? (draft === '' ? placeholder : draft) : (value === null ? placeholder : value)}
       </div>
       {mode === 'input' && padOpen && (
         <NumberPad

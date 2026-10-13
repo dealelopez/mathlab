@@ -140,7 +140,7 @@ describe('ExerciseRunner', () => {
     expect(container.querySelectorAll('[data-testid="tenframe-cell"]')).toHaveLength(20);
   });
 
-  it('identify + rekenrek: readOnly con valor fijo y AnswerSlot para responder', () => {
+  it('identify + rekenrek: readOnly con valor fijo y DigitAnswer para responder', () => {
     const { container, getByTestId } = render(
       <ExerciseRunner exerciseType="identify" difficulty={1} manipulative="rekenrek" />,
     );
@@ -148,8 +148,9 @@ describe('ExerciseRunner', () => {
     // readOnly: click no cambia el valor
     fireEvent.click(container.querySelectorAll('[role="slider"] circle')[0]!);
     expect(getByTestId('rekenrek-total')).toHaveTextContent(`Total: ${shown}`);
-    // Slot de respuesta visible
-    expect(getByTestId('answer-slot')).toBeInTheDocument();
+    // Entrada por dígitos visible
+    expect(getByTestId('digit-strip')).toBeInTheDocument();
+    expect(getByTestId('digit-back')).toBeInTheDocument();
     expect(container.textContent).toContain('Tu respuesta:');
   });
 
@@ -158,11 +159,9 @@ describe('ExerciseRunner', () => {
     getByTestId: (id: string) => HTMLElement,
     value: number,
   ) {
-    fireEvent.click(getByTestId('answer-slot'));
     String(value)
       .split('')
-      .forEach((d) => fireEvent.click(getByTestId(`numpad-${d}`)));
-    fireEvent.click(getByTestId('numpad-confirm'));
+      .forEach((d) => fireEvent.click(getByTestId(`digit-${d}`)));
     fireEvent.click(checkBtn(container));
   }
 
@@ -184,12 +183,12 @@ describe('ExerciseRunner', () => {
     expect(incorrectBanner(container)).toBeInTheDocument();
   });
 
-  it('identify + ábaco: número fijo visible y slot de respuesta', () => {
+  it('identify + ábaco: número fijo visible y entrada por dígitos', () => {
     const { container, getByTestId } = render(
       <ExerciseRunner exerciseType="identify" difficulty={2} manipulative="abacus" />,
     );
     expect(getByTestId('abacus-number')).toBeInTheDocument();
-    expect(getByTestId('answer-slot')).toBeInTheDocument();
+    expect(getByTestId('digit-strip')).toBeInTheDocument();
     expect(container.querySelectorAll('[role="slider"]')).toHaveLength(1);
   });
 

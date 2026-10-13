@@ -28,6 +28,28 @@ function goToStep3(container: HTMLElement) {
   fireEvent.click(nextBtn(container)); // paso 2 → 3
 }
 
+/** Lee el número objetivo del título del paso actual. */
+function readTarget(container: HTMLElement): number {
+  const title = container.querySelector('[data-testid="tutorial-title"]')!.textContent ?? '';
+  const m = title.match(/\d+/);
+  if (!m) throw new Error(`Sin objetivo en título: "${title}"`);
+  return Number(m[0]);
+}
+
+/**
+ * Resuelve el paso de ejercicio actual: parte de 0, así que un solo click
+ * por fila en la cuenta (dígito-1) fija cada dígito (los 0 no necesitan click).
+ */
+function solveCurrentStep(container: HTMLElement) {
+  const target = readTarget(container);
+  const sliders = Array.from(container.querySelectorAll('[role="slider"]'));
+  const digits = String(target).padStart(sliders.length, '0').split('').map(Number);
+  sliders.forEach((slider, i) => {
+    const d = digits[i]!;
+    if (d > 0) fireEvent.click(slider.querySelectorAll('circle')[d - 1]!);
+  });
+}
+
 describe('AbacusTutorial', () => {
   it('empieza en paso 1', () => {
     const { getByTestId } = setup();
@@ -47,7 +69,7 @@ describe('AbacusTutorial', () => {
     expect(getByTestId('tutorial-title')).toHaveTextContent('Esto es un ábaco');
   });
 
-  it('en paso de ejercicio (3): Siguiente deshabilitado hasta que value === 3', () => {
+  it('en paso de ejercicio (3): Siguiente deshabilitado hasta acertar', () => {
     const { container } = setup();
     goToStep3(container);
     expect(nextBtn(container).disabled).toBe(true);
@@ -56,32 +78,34 @@ describe('AbacusTutorial', () => {
   it('en paso de ejercicio: respuesta correcta habilita Siguiente', () => {
     const { container } = setup();
     goToStep3(container);
-    // Fila U (value=0): click en cuenta índice 2 (inactiva) → value=3
-    const slider = container.querySelector('[role="slider"]')!;
-    fireEvent.click(slider.querySelectorAll('circle')[2]!);
+    solveCurrentStep(container);
     expect(nextBtn(container).disabled).toBe(false);
     expect(container.textContent).toContain('¡Correcto!');
+  });
+
+  it('cada montaje pide números distintos (objetivos aleatorios)', () => {
+    const seen = new Set<string>();
+    for (let i = 0; i < 10; i++) {
+      const { container, unmount } = setup();
+      goToStep3(container);
+      seen.add(container.querySelector('[data-testid="tutorial-title"]')!.textContent ?? '');
+      unmount();
+    }
+    // Con objetivos 1-9 sería casi imposible ver siempre el mismo en 10 intentos
+    expect(seen.size).toBeGreaterThan(1);
   });
 
   it('al completar paso 7: se llama onComplete', () => {
     const onComplete = vi.fn();
     const { container } = setup({ onComplete });
     goToStep3(container);
-    // Paso 3: resolver (U → 3)
-    fireEvent.click(container.querySelector('[role="slider"]')!.querySelectorAll('circle')[2]!);
+    solveCurrentStep(container); // paso 3
     fireEvent.click(nextBtn(container)); // → paso 4
     fireEvent.click(nextBtn(container)); // → paso 5
-    // Paso 5: formar 25 (D → 2, U → 5)
-    const sliders5 = Array.from(container.querySelectorAll('[role="slider"]'));
-    fireEvent.click(sliders5[0]!.querySelectorAll('circle')[1]!);
-    fireEvent.click(sliders5[1]!.querySelectorAll('circle')[4]!);
+    solveCurrentStep(container); // paso 5
     fireEvent.click(nextBtn(container)); // → paso 6
     fireEvent.click(nextBtn(container)); // → paso 7
-    // Paso 7: formar 142 (C → 1, D → 4, U → 2)
-    const sliders7 = Array.from(container.querySelectorAll('[role="slider"]'));
-    fireEvent.click(sliders7[0]!.querySelectorAll('circle')[0]!);
-    fireEvent.click(sliders7[1]!.querySelectorAll('circle')[3]!);
-    fireEvent.click(sliders7[2]!.querySelectorAll('circle')[1]!);
+    solveCurrentStep(container); // paso 7
     fireEvent.click(nextBtn(container)); // → onComplete
     expect(onComplete).toHaveBeenCalledTimes(1);
   });

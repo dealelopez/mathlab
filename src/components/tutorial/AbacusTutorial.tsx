@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import Abacus, { type AbacusColumn } from '../manipulatives/Abacus';
+import { randomInt } from '../../lib/math';
 
 export interface AbacusTutorialProps {
   /** Callback al completar el tutorial */
@@ -27,83 +28,94 @@ const U: AbacusColumn = { label: 'U', color: '#EF4444' };
 const D: AbacusColumn = { label: 'D', color: '#10B981' };
 const C: AbacusColumn = { label: 'C', color: '#3B82F6' };
 
-const STEPS: TutorialStep[] = [
-  {
-    type: 'info',
-    title: 'Esto es un ábaco',
-    description:
-      'Un ábaco tiene filas de 10 cuentas. Cada fila tiene una etiqueta: U son las unidades. Mueve las cuentas para formar números.',
-    columns: [U],
-    highlightColumn: -1,
-    readOnly: true,
-    initialValue: 0,
-  },
-  {
-    type: 'info',
-    title: 'Las unidades',
-    description:
-      'Cada cuenta de esta fila vale 1. Si mueves 3 cuentas, el número es 3.',
-    columns: [U],
-    highlightColumn: 0,
-    readOnly: true,
-    initialValue: 0,
-    animateTo: 3,
-  },
-  {
-    type: 'exercise',
-    title: 'Prueba: mueve 3 cuentas en las unidades',
-    description: 'Toca las cuentas para mover 3 a la izquierda. El número debe ser 3.',
-    columns: [U],
-    highlightColumn: 0,
-    readOnly: false,
-    initialValue: 0,
-    target: 3,
-  },
-  {
-    type: 'info',
-    title: 'Las decenas',
-    description:
-      'Cada cuenta de esta fila vale 10. Una cuenta de las decenas = 10 unidades.',
-    columns: [D, U],
-    highlightColumn: 0,
-    readOnly: true,
-    initialValue: 0,
-    animateTo: 10,
-  },
-  {
-    type: 'exercise',
-    title: 'Muestra el número 25',
-    description: 'Usa las decenas y las unidades para formar el 25.',
-    columns: [D, U],
-    highlightColumn: -1,
-    readOnly: false,
-    initialValue: 0,
-    target: 25,
-  },
-  {
-    type: 'info',
-    title: 'Las centenas',
-    description: 'Cada cuenta de esta fila vale 100. Una centena = 10 decenas.',
-    columns: [C, D, U],
-    highlightColumn: 0,
-    readOnly: true,
-    initialValue: 0,
-    animateTo: 100,
-  },
-  {
-    type: 'exercise',
-    title: 'Ahora solo: muestra el 142',
-    description: 'Sin ayuda: usa las tres filas para formar el 142.',
-    columns: [C, D, U],
-    highlightColumn: -1,
-    readOnly: false,
-    initialValue: 0,
-    target: 142,
-  },
-];
+/** Construye los 7 pasos con objetivos aleatorios para los ejercicios. */
+function buildSteps(targetU: number, targetDU: number, targetCDU: number): TutorialStep[] {
+  return [
+    {
+      type: 'info',
+      title: 'Esto es un ábaco',
+      description:
+        'Un ábaco tiene filas de 10 cuentas. Cada fila tiene una etiqueta: U son las unidades. Mueve las cuentas para formar números.',
+      columns: [U],
+      highlightColumn: -1,
+      readOnly: true,
+      initialValue: 0,
+    },
+    {
+      type: 'info',
+      title: 'Las unidades',
+      description:
+        'Cada cuenta de esta fila vale 1. Si mueves 3 cuentas, el número es 3.',
+      columns: [U],
+      highlightColumn: 0,
+      readOnly: true,
+      initialValue: 0,
+      animateTo: 3,
+    },
+    {
+      type: 'exercise',
+      title: `Prueba: mueve ${targetU} cuentas en las unidades`,
+      description: `Toca las cuentas para mover ${targetU} a la izquierda. El número debe ser ${targetU}.`,
+      columns: [U],
+      highlightColumn: 0,
+      readOnly: false,
+      initialValue: 0,
+      target: targetU,
+    },
+    {
+      type: 'info',
+      title: 'Las decenas',
+      description:
+        'Cada cuenta de esta fila vale 10. Una cuenta de las decenas = 10 unidades.',
+      columns: [D, U],
+      highlightColumn: 0,
+      readOnly: true,
+      initialValue: 0,
+      animateTo: 10,
+    },
+    {
+      type: 'exercise',
+      title: `Muestra el número ${targetDU}`,
+      description: `Usa las decenas y las unidades para formar el ${targetDU}.`,
+      columns: [D, U],
+      highlightColumn: -1,
+      readOnly: false,
+      initialValue: 0,
+      target: targetDU,
+    },
+    {
+      type: 'info',
+      title: 'Las centenas',
+      description: 'Cada cuenta de esta fila vale 100. Una centena = 10 decenas.',
+      columns: [C, D, U],
+      highlightColumn: 0,
+      readOnly: true,
+      initialValue: 0,
+      animateTo: 100,
+    },
+    {
+      type: 'exercise',
+      title: `Ahora solo: muestra el ${targetCDU}`,
+      description: `Sin ayuda: usa las tres filas para formar el ${targetCDU}.`,
+      columns: [C, D, U],
+      highlightColumn: -1,
+      readOnly: false,
+      initialValue: 0,
+      target: targetCDU,
+    },
+  ];
+}
 
 /** Tutorial interactivo de 7 pasos para aprender a usar el ábaco. */
 export default function AbacusTutorial({ onComplete, onBack }: AbacusTutorialProps) {
+  // Objetivos aleatorios: se generan una vez al montar el tutorial.
+  const [targets] = useState(() => ({
+    u: randomInt(1, 9),
+    du: randomInt(10, 99),
+    cdu: randomInt(100, 999),
+  }));
+  const STEPS = buildSteps(targets.u, targets.du, targets.cdu);
+
   const [stepIndex, setStepIndex] = useState(0);
   const [abacusValue, setAbacusValue] = useState(STEPS[0]!.initialValue);
 

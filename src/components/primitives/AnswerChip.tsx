@@ -42,14 +42,25 @@ export default function AnswerChip({
 
   const handlePointerUp = (e: React.PointerEvent) => {
     if (draggingChip?.sourceId !== id) return;
+    // El chip sigue al dedo y queda justo debajo: ocultarlo un instante para
+    // que elementFromPoint devuelva el slot (si hay uno) en vez del propio chip.
+    const chipEl = e.currentTarget as HTMLElement;
+    const prevVisibility = chipEl.style.visibility;
     let slotId: string | null = null;
     try {
+      chipEl.style.visibility = 'hidden';
       const el = document.elementFromPoint?.(e.clientX, e.clientY) ?? null;
       slotId = el?.closest?.('[data-slot-id]')?.getAttribute('data-slot-id') ?? null;
     } catch {
       slotId = null;
+    } finally {
+      chipEl.style.visibility = prevVisibility;
     }
     if (slotId) dropOnSlot(slotId);
+    endDrag();
+  };
+
+  const handlePointerCancel = () => {
     endDrag();
   };
 
@@ -62,8 +73,10 @@ export default function AnswerChip({
       data-dragging={dragging ? 'true' : 'false'}
       onPointerDown={handlePointerDown}
       onPointerUp={handlePointerUp}
+      onPointerCancel={handlePointerCancel}
       style={{
         touchAction: canDrag ? 'none' : undefined,
+        WebkitTouchCallout: 'none',
         transform: dragging ? `translate(${delta.x}px, ${delta.y}px)` : undefined,
         zIndex: dragging ? 50 : undefined,
         position: dragging ? 'relative' : undefined,

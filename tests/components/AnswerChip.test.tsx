@@ -1,7 +1,8 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
+import { useEffect } from 'react';
 import { render, fireEvent, act } from '@testing-library/react';
 import AnswerChip from '../../src/components/primitives/AnswerChip';
-import { DragDropProvider } from '../../src/components/primitives/DragDropContext';
+import { DragDropProvider, useDragDrop } from '../../src/components/primitives/DragDropContext';
 
 function pointerDown(el: HTMLElement, x = 100, y = 100) {
   fireEvent.pointerDown(el, { clientX: x, clientY: y, pointerId: 1, bubbles: true });
@@ -56,5 +57,73 @@ describe('AnswerChip', () => {
     });
     expect(chip).toHaveAttribute('data-dragging', 'true');
     expect(chip.style.transform).toContain('translate(30px, 50px)');
+  });
+
+  it('soltar sobre un slot transfiere el valor vía onDrop', () => {
+    const onDrop = vi.fn();
+    function Setup() {
+      const { setOnDrop } = useDragDrop();
+      useEffect(() => {
+        setOnDrop(onDrop);
+        return () => setOnDrop(null);
+      }, [setOnDrop]);
+      return (
+        <>
+          <AnswerChip id="c5" value={5} />
+          <div data-slot-id="s1" data-testid="slot" />
+        </>
+      );
+    }
+    const { getByTestId } = render(
+      <DragDropProvider>
+        <Setup />
+      </DragDropProvider>,
+    );
+    const chip = getByTestId('answer-chip');
+    const slot = getByTestId('slot');
+    pointerDown(chip, 100, 100);
+    act(() => {
+      pointerMove(chip, 150, 150);
+    });
+    const orig = document.elementFromPoint;
+    document.elementFromPoint = () => slot;
+    try {
+      act(() => {
+        fireEvent.pointerUp(chip, { clientX: 150, clientY: 150, pointerId: 1, bubbles: true });
+      });
+    } finally {
+      document.elementFromPoint = orig;
+    }
+    expect(onDrop).toHaveBeenCalledTimes(1);
+    expect(onDrop).toHaveBeenCalledWith('s1', 5);
+  });
+
+  it('soltar fuera de un slot no llama a onDrop', () => {
+    const onDrop = vi.fn();
+    function Setup() {
+      const { setOnDrop } = useDragDrop();
+      useEffect(() => {
+        setOnDrop(onDrop);
+        return () => setOnDrop(null);
+      }, [setOnDrop]);
+      return <AnswerChip id="c5" value={5} />;
+    }
+    const { getByTestId } = render(
+      <DragDropProvider>
+        <Setup />
+      </DragDropProvider>,
+    );
+    const chip = getByTestId('answer-chip');
+    pointerDown(chip, 100, 100);
+    const orig = document.elementFromPoint;
+    document.elementFromPoint = () => document.body;
+    try {
+      act(() => {
+        fireEvent.pointerUp(chip, { clientX: 150, clientY: 150, pointerId: 1, bubbles: true });
+      });
+    } finally {
+      document.elementFromPoint = orig;
+    }
+    expect(onDrop).not.toHaveBeenCalled();
   });
 });

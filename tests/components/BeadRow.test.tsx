@@ -17,13 +17,16 @@ describe('BeadRow', () => {
     expect(circles(container)).toHaveLength(6);
   });
 
-  it('las primeras colorSplit cuentas tienen el primer color y el resto el segundo', () => {
+  it('las cuentas activas tienen el color pleno y las inactivas el aclarado', () => {
     const { container } = render(
-      <BeadRow value={0} onChange={() => {}} colorSplit={5} colors={['#EF4444', '#FAFAFA']} />,
+      <BeadRow value={5} onChange={() => {}} colorSplit={5} colors={['#EF4444', '#FAFAFA']} />,
     );
     const cs = circles(container);
     cs.slice(0, 5).forEach((c) => expect(c).toHaveAttribute('fill', '#EF4444'));
-    cs.slice(5).forEach((c) => expect(c).toHaveAttribute('fill', '#FAFAFA'));
+    cs.slice(5).forEach((c) => {
+      expect(c.getAttribute('fill')).not.toBe('#FAFAFA');
+      expect(c.getAttribute('fill')).toContain('color-mix');
+    });
   });
 
   it('con value=5: 5 cuentas a la izquierda del separador y 5 a la derecha', () => {
@@ -63,16 +66,18 @@ describe('BeadRow', () => {
     expect(onChange).not.toHaveBeenCalled();
   });
 
-  it("con colors=['#3B82F6'] (un solo color): todas las cuentas son azules", () => {
+  it("con colors=['#3B82F6'] (un solo color): las activas son azules plenos", () => {
     const { container } = render(
       <BeadRow value={4} onChange={() => {}} colors={['#3B82F6']} />,
     );
-    circles(container).forEach((c) => expect(c).toHaveAttribute('fill', '#3B82F6'));
+    const cs = circles(container);
+    cs.slice(0, 4).forEach((c) => expect(c).toHaveAttribute('fill', '#3B82F6'));
+    cs.slice(4).forEach((c) => expect(c.getAttribute('fill')).toContain('color-mix'));
   });
 
-  it('con colorSplit=10: todas las cuentas usan el primer color', () => {
+  it('con colorSplit=10 y todo activo: todas las cuentas usan el primer color', () => {
     const { container } = render(
-      <BeadRow value={4} onChange={() => {}} colorSplit={10} colors={['#EF4444', '#FAFAFA']} />,
+      <BeadRow value={10} onChange={() => {}} colorSplit={10} colors={['#EF4444', '#FAFAFA']} />,
     );
     circles(container).forEach((c) => expect(c).toHaveAttribute('fill', '#EF4444'));
   });

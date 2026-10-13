@@ -12,13 +12,28 @@ function renderBead(props = {}) {
 
 describe('Bead', () => {
   it('renderiza un <circle> SVG con cx, cy, r y color correctos', () => {
-    const { container } = renderBead();
+    const { container } = renderBead({ active: true });
     const circle = container.querySelector('circle');
     expect(circle).toBeInTheDocument();
     expect(circle).toHaveAttribute('cx', '10');
     expect(circle).toHaveAttribute('cy', '20');
     expect(circle).toHaveAttribute('r', '8');
     expect(circle).toHaveAttribute('fill', '#ff0000');
+  });
+
+  it('activa e inactiva tienen el mismo grosor de borde', () => {
+    const { container: c1 } = renderBead({ active: true });
+    const { container: c2 } = renderBead({ active: false });
+    const w1 = c1.querySelector('circle')!.getAttribute('stroke-width');
+    const w2 = c2.querySelector('circle')!.getAttribute('stroke-width');
+    expect(w1).toBe(w2);
+  });
+
+  it('inactiva muestra el color aclarado en lugar del color pleno', () => {
+    const { container } = renderBead({ active: false });
+    const circle = container.querySelector('circle')!;
+    expect(circle.getAttribute('fill')).not.toBe('#ff0000');
+    expect(circle.getAttribute('fill')).toContain('color-mix');
   });
 
   it('llama onClick al hacer click', () => {

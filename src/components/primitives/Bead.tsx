@@ -7,7 +7,7 @@ interface BeadProps {
   r: number;
   /** Color de relleno */
   color: string;
-  /** Si la cuenta está activa (desplazada) — borde más grueso */
+  /** Si la cuenta está activa (desplazada) — color pleno; inactiva = color aclarado */
   active?: boolean;
   /** Click handler */
   onClick?: () => void;
@@ -34,9 +34,9 @@ export default function Bead({ cx, cy, r, color, active = false, onClick, classN
       cx={cx}
       cy={cy}
       r={r}
-      fill={color}
+      fill={active ? color : `color-mix(in srgb, ${color} 40%, white)`}
       stroke={darken(color)}
-      strokeWidth={active ? 3 : 1.5}
+      strokeWidth={3}
       onClick={onClick}
       className={className}
       style={{ transition: 'cx 150ms ease', ...(onClick ? { cursor: 'pointer' } : undefined), ...style }}

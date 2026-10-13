@@ -183,6 +183,22 @@ describe('ExerciseRunner', () => {
     expect(incorrectBanner(container)).toBeInTheDocument();
   });
 
+  it('identify: borrar tras un fallo deja el valor vacío (sin 0 atascado)', () => {
+    const { container, getByTestId } = render(
+      <ExerciseRunner exerciseType="identify" difficulty={1} manipulative="rekenrek" />,
+    );
+    const shown = Number(getByTestId('rekenrek-total').textContent!.match(/Total: (\d+)/)![1]);
+    const wrong = shown + 1; // rango 1-5: wrong es una cifra distinta
+    fireEvent.click(getByTestId(`digit-${wrong}`));
+    fireEvent.click(checkBtn(container));
+    expect(incorrectBanner(container)).toBeInTheDocument();
+    fireEvent.click(getByTestId('digit-back'));
+    const rows = Array.from(container.querySelectorAll('[data-testid="digit-row"]'));
+    expect(rows).toHaveLength(1);
+    rows.forEach((r) => expect(r).toHaveAttribute('data-filled', 'false'));
+    expect(rows.some((r) => r.textContent === '0')).toBe(false);
+  });
+
   it('identify: tantos huecos como cifras del valor mostrado', () => {
     const { container, getByTestId } = render(
       <ExerciseRunner exerciseType="identify" difficulty={2} manipulative="abacus" />,

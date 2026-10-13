@@ -465,7 +465,7 @@ export default function ExerciseRunner({
     setUserAnswer(null);
   }, [configKey]);
 
-  const handleAnswer = (a: Answer) => {
+  const handleAnswer = (a: Answer | null) => {
     setUserAnswer(a);
     if (feedback === 'incorrect') {
       setFeedback(null);
@@ -528,7 +528,7 @@ export default function ExerciseRunner({
               <span className="text-lg font-semibold">Tu respuesta:</span>
               <DigitAnswer
                 value={typeof userAnswer === 'number' ? userAnswer : null}
-                onChange={(v) => handleAnswer((v ?? 0) as Answer)}
+                onChange={handleAnswer}
                 maxDigits={3}
                 digitCount={String(current.setup.initialValue ?? 0).length}
               />

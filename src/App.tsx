@@ -1,41 +1,65 @@
 import { useState } from 'react';
-import Rekenrek from './components/manipulatives/Rekenrek';
+import Abacus from './components/manipulatives/Abacus';
+import AbacusTutorial from './components/tutorial/AbacusTutorial';
 
-// Demo temporal de la tarea 04. Se sustituye en la tarea 15 con la navegación real.
+// Demo temporal de la tarea 05. Se sustituye en la tarea 15 con la navegación real.
 export default function App() {
-  const [rowCount, setRowCount] = useState(2);
-  const [values, setValues] = useState<number[]>([7, 3]);
-
-  const changeRows = (n: number) => {
-    setRowCount(n);
-    setValues((prev) =>
-      Array.from({ length: n }, (_, i) => (i < prev.length ? prev[i]! : 0)),
-    );
-  };
+  const [showTutorial, setShowTutorial] = useState(false);
+  const [number, setNumber] = useState(347);
+  const [done, setDone] = useState(false);
 
   return (
     <div className="p-4">
       <h1 className="text-2xl font-bold">Mathlab</h1>
-      <p>Demo temporal task-04: Rekenrek.</p>
+      <p>Demo temporal task-05: Ábaco + tutorial.</p>
 
-      <div className="mt-4 flex gap-2">
-        {[1, 2, 5, 10].map((n) => (
-          <button
-            key={n}
-            onClick={() => changeRows(n)}
-            className={`rounded border px-3 py-1 ${rowCount === n ? 'bg-amber-200 font-bold' : ''}`}
-          >
-            {n} {n === 1 ? 'fila' : 'filas'}
-          </button>
-        ))}
+      <div className="mt-4">
+        <button
+          onClick={() => {
+            setShowTutorial((s) => !s);
+            setDone(false);
+          }}
+          className="rounded bg-blue-600 px-3 py-1 text-white"
+        >
+          {showTutorial ? 'Ver ábaco libre' : 'Abrir tutorial'}
+        </button>
       </div>
 
       <div className="mt-4">
-        <Rekenrek
-          rows={rowCount}
-          value={values}
-          onChange={(v) => setValues(v)}
-        />
+        {showTutorial ? (
+          done ? (
+            <div>
+              <p className="font-semibold text-green-700">¡Tutorial completado!</p>
+              <button
+                onClick={() => {
+                  setDone(false);
+                  setShowTutorial(false);
+                }}
+                className="mt-2 rounded border px-3 py-1"
+              >
+                Volver al ábaco
+              </button>
+            </div>
+          ) : (
+            <AbacusTutorial
+              onComplete={() => setDone(true)}
+              onBack={() => setShowTutorial(false)}
+            />
+          )
+        ) : (
+          <div>
+            <Abacus
+              columns={[
+                { label: 'C', color: '#3B82F6' },
+                { label: 'D', color: '#10B981' },
+                { label: 'U', color: '#EF4444' },
+              ]}
+              value={number}
+              onChange={setNumber}
+            />
+            <p className="mt-2 font-mono text-sm">número: {number}</p>
+          </div>
+        )}
       </div>
     </div>
   );

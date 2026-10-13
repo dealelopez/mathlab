@@ -9,7 +9,7 @@ export interface BeadRowProps {
   value: number;
   /** Callback cuando el valor cambia */
   onChange: (newValue: number) => void;
-  /** Posición donde cambia el color. 5 para rekenrek (5 rojas + 5 blancas), 10 para color uniforme */
+  /** Posición donde cambia el color. 5 para rekenrek (5 rojas + 5 grises), 10 para color uniforme */
   colorSplit?: number;
   /** Colores: [colorPrimerGrupo, colorSegundoGrupo]. Si solo hay uno, todas del mismo color */
   colors?: [string, string] | [string];
@@ -37,7 +37,7 @@ export default function BeadRow({
   value,
   onChange,
   colorSplit = 5,
-  colors = ['#EF4444', '#FAFAFA'],
+  colors = ['#EF4444', '#9CA3AF'],
   readOnly = false,
   width = 300,
   height = 40,

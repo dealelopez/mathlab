@@ -8,7 +8,7 @@ export interface RekenrekProps {
   beadsPerRow?: number;
   /** Punto de cambio de color por fila (default 5) */
   colorSplit?: number;
-  /** Colores por fila [grupo1, grupo2] (default rojo + blanco) */
+  /** Colores por fila [grupo1, grupo2] (default rojo + gris) */
   colors?: [string, string];
   /**
    * Valor del rekenrek. Acepta dos formatos:
@@ -29,14 +29,14 @@ function clamp(n: number, min: number, max: number): number {
 }
 
 /**
- * Rekenrek — bastidor de N filas de cuentas (5 rojas + 5 blancas por defecto).
+ * Rekenrek — bastidor de N filas de cuentas (5 rojas + 5 grises por defecto).
  * Cada fila es un BeadRow; el total es la suma de las filas.
  */
 export default function Rekenrek({
   rows = 2,
   beadsPerRow = 10,
   colorSplit = 5,
-  colors = ['#EF4444', '#FAFAFA'],
+  colors = ['#EF4444', '#9CA3AF'],
   value,
   onChange,
   readOnly = false,

@@ -17,6 +17,13 @@ describe('BeadRow', () => {
     expect(circles(container)).toHaveLength(6);
   });
 
+  it('por defecto: 5 rojas + 5 grises (contraste sobre fondo claro)', () => {
+    const { container } = render(<BeadRow value={10} onChange={() => {}} />);
+    const cs = circles(container);
+    cs.slice(0, 5).forEach((c) => expect(c).toHaveAttribute('fill', '#EF4444'));
+    cs.slice(5).forEach((c) => expect(c).toHaveAttribute('fill', '#9CA3AF'));
+  });
+
   it('las cuentas activas tienen el color pleno y las inactivas el aclarado', () => {
     const { container } = render(
       <BeadRow value={5} onChange={() => {}} colorSplit={5} colors={['#EF4444', '#FAFAFA']} />,

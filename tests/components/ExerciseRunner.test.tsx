@@ -87,9 +87,9 @@ describe('ExerciseRunner', () => {
     );
     const instruction = getByTestId('activity-instruction').textContent!;
     expect(instruction).toContain('Muestra el número');
-    // 1 fila (dificultad 1) con valor 0
+    // 2 filas (el rekenrek siempre tiene 2) con valor 0
     const sliders = Array.from(container.querySelectorAll('[role="slider"]'));
-    expect(sliders).toHaveLength(1);
+    expect(sliders).toHaveLength(2);
     expect(sliders[0]!.getAttribute('aria-valuenow')).toBe('0');
   });
 
@@ -193,12 +193,12 @@ describe('ExerciseRunner', () => {
     expect(container.querySelectorAll('[role="slider"]')).toHaveLength(1);
   });
 
-  it('cambiar dificultad de 2 a 4 cambia las filas del rekenrek (2→5)', () => {
+  it('el rekenrek siempre tiene 2 filas en cualquier dificultad', () => {
     const { container, rerender } = render(
       <ExerciseRunner exerciseType="represent" difficulty={2} manipulative="rekenrek" />,
     );
     expect(container.querySelectorAll('[role="slider"]')).toHaveLength(2);
     rerender(<ExerciseRunner exerciseType="represent" difficulty={4} manipulative="rekenrek" />);
-    expect(container.querySelectorAll('[role="slider"]')).toHaveLength(5);
+    expect(container.querySelectorAll('[role="slider"]')).toHaveLength(2);
   });
 });

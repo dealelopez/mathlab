@@ -4,6 +4,10 @@ import type { DifficultyConfig } from './types';
 /**
  * DIFFICULTY_MAP — Configuración de dificultad por tipo de ejercicio y nivel.
  *
+ * REGLA: el rekenrek siempre tiene 2 filas (máx. 20). Si tiene más filas se
+ * considera un ábaco. Por eso rekenrekRows es 2 en todos los niveles y el
+ * rekenrek solo aparece en validManipulatives cuando el rango cabe en 20.
+ *
  * Para añadir un nivel 6:
  *   1. Añadir la entrada en cada tipo de ejercicio.
  *   2. Ampliar el tipo DifficultyLevel en types.ts.
@@ -17,7 +21,7 @@ export const DIFFICULTY_MAP: Record<ExerciseType, Record<DifficultyLevel, Diffic
     1: {
       numberRange: [1, 5],
       validManipulatives: ['rekenrek', 'abacus', 'tenframe'],
-      manipulativeConfig: { rekenrekRows: 1, abacusColumns: ['U'], tenFrameCount: 1 },
+      manipulativeConfig: { rekenrekRows: 2, abacusColumns: ['U'], tenFrameCount: 1 },
       distractorCount: 0, hiddenCount: 0, tolerance: 0, decomposeParts: 2,
       seriesPatterns: [],
     },
@@ -37,15 +41,15 @@ export const DIFFICULTY_MAP: Record<ExerciseType, Record<DifficultyLevel, Diffic
     },
     4: {
       numberRange: [1, 50],
-      validManipulatives: ['rekenrek', 'abacus'],
-      manipulativeConfig: { rekenrekRows: 5, abacusColumns: ['D', 'U'] },
+      validManipulatives: ['abacus'],
+      manipulativeConfig: { rekenrekRows: 2, abacusColumns: ['D', 'U'] },
       distractorCount: 0, hiddenCount: 0, tolerance: 0, decomposeParts: 2,
       seriesPatterns: [],
     },
     5: {
       numberRange: [1, 100],
-      validManipulatives: ['rekenrek', 'abacus'],
-      manipulativeConfig: { rekenrekRows: 10, abacusColumns: ['C', 'D', 'U'] },
+      validManipulatives: ['abacus'],
+      manipulativeConfig: { rekenrekRows: 2, abacusColumns: ['C', 'D', 'U'] },
       distractorCount: 0, hiddenCount: 0, tolerance: 0, decomposeParts: 2,
       seriesPatterns: [],
     },
@@ -55,7 +59,7 @@ export const DIFFICULTY_MAP: Record<ExerciseType, Record<DifficultyLevel, Diffic
     1: {
       numberRange: [1, 5],
       validManipulatives: ['rekenrek', 'abacus', 'tenframe', 'numberline'],
-      manipulativeConfig: { rekenrekRows: 1, abacusColumns: ['U'], tenFrameCount: 1, numberLineRange: [0, 5] },
+      manipulativeConfig: { rekenrekRows: 2, abacusColumns: ['U'], tenFrameCount: 1, numberLineRange: [0, 5] },
       distractorCount: 0, hiddenCount: 0, tolerance: 0, decomposeParts: 2,
       seriesPatterns: [],
     },
@@ -75,15 +79,15 @@ export const DIFFICULTY_MAP: Record<ExerciseType, Record<DifficultyLevel, Diffic
     },
     4: {
       numberRange: [1, 50],
-      validManipulatives: ['rekenrek', 'abacus', 'numberline'],
-      manipulativeConfig: { rekenrekRows: 5, abacusColumns: ['D', 'U'], tenFrameCount: 2, numberLineRange: [0, 50] },
+      validManipulatives: ['abacus', 'numberline'],
+      manipulativeConfig: { rekenrekRows: 2, abacusColumns: ['D', 'U'], tenFrameCount: 2, numberLineRange: [0, 50] },
       distractorCount: 0, hiddenCount: 0, tolerance: 0, decomposeParts: 2,
       seriesPatterns: [],
     },
     5: {
       numberRange: [1, 100],
-      validManipulatives: ['rekenrek', 'abacus', 'numberline'],
-      manipulativeConfig: { rekenrekRows: 10, abacusColumns: ['C', 'D', 'U'], tenFrameCount: 2, numberLineRange: [0, 100] },
+      validManipulatives: ['abacus', 'numberline'],
+      manipulativeConfig: { rekenrekRows: 2, abacusColumns: ['C', 'D', 'U'], tenFrameCount: 2, numberLineRange: [0, 100] },
       distractorCount: 0, hiddenCount: 0, tolerance: 0, decomposeParts: 2,
       seriesPatterns: [],
     },

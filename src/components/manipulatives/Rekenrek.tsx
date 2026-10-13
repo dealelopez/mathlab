@@ -2,7 +2,7 @@ import BeadRow from '../primitives/BeadRow';
 import { distributeToRows } from '../../lib/math';
 
 export interface RekenrekProps {
-  /** Número de filas (default 2). Valores típicos: 1, 2, 5, 10 */
+  /** Número de filas (default 2). Un rekenrek estándar siempre tiene 2 filas. */
   rows?: number;
   /** Cuentas por fila (default 10) */
   beadsPerRow?: number;

@@ -68,6 +68,25 @@ describe('DIFFICULTY_MAP', () => {
       }
     }
   });
+
+  it('rekenrek siempre tiene 2 filas en todos los niveles', () => {
+    for (const type of ['represent', 'identify'] as const) {
+      for (const level of DIFFICULTY_LEVELS) {
+        expect(DIFFICULTY_MAP[type][level].manipulativeConfig.rekenrekRows).toBe(2);
+      }
+    }
+  });
+
+  it('rekenrek solo es válido en niveles donde el rango cabe (≤ 20)', () => {
+    for (const type of ['represent', 'identify'] as const) {
+      for (const level of DIFFICULTY_LEVELS) {
+        const config = DIFFICULTY_MAP[type][level];
+        if (config.validManipulatives?.includes('rekenrek')) {
+          expect(config.numberRange[1]).toBeLessThanOrEqual(20);
+        }
+      }
+    }
+  });
 });
 
 describe('getDifficultyConfig', () => {

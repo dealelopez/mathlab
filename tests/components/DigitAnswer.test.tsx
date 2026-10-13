@@ -131,6 +131,59 @@ describe('DigitAnswer', () => {
     expect(onChange).not.toHaveBeenCalled();
   });
 
+  it('arrastrar un dígito de la tira a un hueco ocupado lo inserta ahí', () => {
+    // [5, ?] + arrastrar 4 al hueco 0 → 45
+    const { onChange, container, getByTestId } = setupControlled(5);
+    const btn = getByTestId('digit-4');
+    const slot0 = container.querySelectorAll('[data-testid="digit-row"]')[0]! as HTMLElement;
+    fireEvent.pointerDown(btn, { clientX: 100, clientY: 200, pointerId: 1, bubbles: true });
+    fireEvent.pointerMove(btn, { clientX: 100, clientY: 100, pointerId: 1, bubbles: true });
+    const orig = document.elementFromPoint;
+    document.elementFromPoint = (() => slot0) as unknown as typeof document.elementFromPoint;
+    try {
+      fireEvent.pointerUp(btn, { clientX: 100, clientY: 100, pointerId: 1, bubbles: true });
+    } finally {
+      document.elementFromPoint = orig;
+    }
+    expect(onChange).toHaveBeenCalledTimes(1);
+    expect(onChange).toHaveBeenCalledWith(45);
+  });
+
+  it('arrastrar un dígito a un hueco vacío lo añade al final', () => {
+    // [5, ?] + arrastrar 4 al hueco 1 (vacío) → 54
+    const { onChange, container, getByTestId } = setupControlled(5);
+    const btn = getByTestId('digit-4');
+    const slot1 = container.querySelectorAll('[data-testid="digit-row"]')[1]! as HTMLElement;
+    fireEvent.pointerDown(btn, { clientX: 100, clientY: 200, pointerId: 1, bubbles: true });
+    fireEvent.pointerMove(btn, { clientX: 150, clientY: 100, pointerId: 1, bubbles: true });
+    const orig = document.elementFromPoint;
+    document.elementFromPoint = (() => slot1) as unknown as typeof document.elementFromPoint;
+    try {
+      fireEvent.pointerUp(btn, { clientX: 150, clientY: 100, pointerId: 1, bubbles: true });
+    } finally {
+      document.elementFromPoint = orig;
+    }
+    expect(onChange).toHaveBeenCalledTimes(1);
+    expect(onChange).toHaveBeenCalledWith(54);
+  });
+
+  it('arrastrar fuera de los huecos no añade nada (ni siquiera con el click)', () => {
+    const { onChange, getByTestId } = setupControlled(5);
+    const btn = getByTestId('digit-4');
+    fireEvent.pointerDown(btn, { clientX: 100, clientY: 200, pointerId: 1, bubbles: true });
+    fireEvent.pointerMove(btn, { clientX: 300, clientY: 300, pointerId: 1, bubbles: true });
+    const orig = document.elementFromPoint;
+    document.elementFromPoint = (() => null) as unknown as typeof document.elementFromPoint;
+    try {
+      fireEvent.pointerUp(btn, { clientX: 300, clientY: 300, pointerId: 1, bubbles: true });
+    } finally {
+      document.elementFromPoint = orig;
+    }
+    // Ni drop ni el click suprimido añaden la cifra
+    fireEvent.click(btn);
+    expect(onChange).not.toHaveBeenCalled();
+  });
+
   it('toque sin arrastrar no cambia el valor', () => {
     const { onChange, container } = setupControlled(42);
     const row0 = container.querySelectorAll(

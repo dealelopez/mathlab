@@ -19,12 +19,31 @@ export interface DigitAnswerProps {
 /** Distancia mínima en px para considerar el gesto un arrastre. */
 const DRAG_THRESHOLD = 8;
 
+type DragState =
+  | { kind: 'slot'; index: number; dx: number; dy: number }
+  | { kind: 'strip'; digit: number; dx: number; dy: number };
+
 /** Mueve el elemento de from a to dentro del array. */
 function moveIndex<T>(arr: T[], from: number, to: number): T[] {
   const next = [...arr];
   const [item] = next.splice(from, 1);
   next.splice(to, 0, item!);
   return next;
+}
+
+/** Busca el índice de hueco bajo el puntero ([data-digit-index]). */
+function findDropIndex(e: React.PointerEvent, hideEl: HTMLElement): number | null {
+  const prevVisibility = hideEl.style.visibility;
+  try {
+    hideEl.style.visibility = 'hidden';
+    const el = document.elementFromPoint?.(e.clientX, e.clientY) ?? null;
+    const idx = el?.closest?.('[data-digit-index]')?.getAttribute('data-digit-index');
+    return idx === null || idx === undefined ? null : Number(idx);
+  } catch {
+    return null;
+  } finally {
+    hideEl.style.visibility = prevVisibility;
+  }
 }
 
 /**
@@ -45,13 +64,23 @@ export default function DigitAnswer({
   const rowCount = Math.min(digitCount ?? digits.length + 1, Math.max(maxDigits, 1));
   const full = digits.length >= rowCount;
 
-  // Arrastre de reordenación: índice arrastrado + desplazamiento X.
-  const [drag, setDrag] = useState<{ index: number; dx: number } | null>(null);
-  const dragStartX = useRef(0);
+  // Arrastre: reordenar cifras entre huecos o soltar un dígito de la tira en un hueco.
+  const [drag, setDrag] = useState<DragState | null>(null);
+  const dragStart = useRef({ x: 0, y: 0 });
+  // Tras un arrastre, el click sintético debe ignorarse (si no, añadiría dos veces).
+  const suppressClick = useRef(false);
 
   const append = (d: number) => {
     if (full) return;
     onChange(Number(`${digits}${d}`));
+  };
+
+  const handleStripClick = (d: number) => {
+    if (suppressClick.current) {
+      suppressClick.current = false;
+      return;
+    }
+    append(d);
   };
 
   const eraseLast = () => {
@@ -60,49 +89,56 @@ export default function DigitAnswer({
     onChange(next === '' ? null : Number(next));
   };
 
-  const handleRowPointerDown = (e: React.PointerEvent, index: number) => {
-    if (index >= digits.length) return; // solo las cifras colocadas se arrastran
-    dragStartX.current = e.clientX;
-    const target = e.currentTarget as HTMLElement;
+  const capturePointer = (e: React.PointerEvent) => {
     try {
-      target.setPointerCapture?.(e.pointerId);
+      (e.currentTarget as HTMLElement).setPointerCapture?.(e.pointerId);
     } catch {
       // jsdom u otros entornos sin soporte real: ignorar
     }
-    setDrag({ index, dx: 0 });
   };
 
-  const handleRowPointerMove = (e: React.PointerEvent) => {
-    if (!drag) return;
-    setDrag({ index: drag.index, dx: e.clientX - dragStartX.current });
+  const handleRowPointerDown = (e: React.PointerEvent, index: number) => {
+    if (index >= digits.length) return; // solo las cifras colocadas se arrastran
+    dragStart.current = { x: e.clientX, y: e.clientY };
+    capturePointer(e);
+    setDrag({ kind: 'slot', index, dx: 0, dy: 0 });
   };
 
-  const handleRowPointerUp = (e: React.PointerEvent) => {
+  const handleStripPointerDown = (e: React.PointerEvent, digit: number) => {
+    if (full) return;
+    dragStart.current = { x: e.clientX, y: e.clientY };
+    capturePointer(e);
+    setDrag({ kind: 'strip', digit, dx: 0, dy: 0 });
+  };
+
+  const handleDragMove = (e: React.PointerEvent) => {
     if (!drag) return;
-    const from = drag.index;
-    const dx = e.clientX - dragStartX.current;
+    setDrag({ ...drag, dx: e.clientX - dragStart.current.x, dy: e.clientY - dragStart.current.y });
+  };
+
+  const handleDragEnd = (e: React.PointerEvent) => {
+    if (!drag) return;
+    const dx = e.clientX - dragStart.current.x;
+    const dy = e.clientY - dragStart.current.y;
     setDrag(null);
-    if (Math.abs(dx) < DRAG_THRESHOLD) return; // fue un toque, no un arrastre
-    // Ocultar la fila arrastrada para detectar la fila destino debajo.
-    const rowEl = e.currentTarget as HTMLElement;
-    const prevVisibility = rowEl.style.visibility;
-    let to: number | null = null;
-    try {
-      rowEl.style.visibility = 'hidden';
-      const el = document.elementFromPoint?.(e.clientX, e.clientY) ?? null;
-      const idx = el?.closest?.('[data-digit-index]')?.getAttribute('data-digit-index');
-      to = idx === null || idx === undefined ? null : Number(idx);
-    } catch {
-      to = null;
-    } finally {
-      rowEl.style.visibility = prevVisibility;
+    if (Math.hypot(dx, dy) < DRAG_THRESHOLD) return; // fue un toque, no un arrastre
+    suppressClick.current = true;
+    const to = findDropIndex(e, e.currentTarget as HTMLElement);
+    if (to === null) return;
+    if (drag.kind === 'slot') {
+      if (to === drag.index) return;
+      const reordered = moveIndex(digits.split(''), drag.index, Math.max(0, Math.min(rowCount - 1, to)));
+      onChange(Number(reordered.join('')));
+    } else {
+      // Soltar la tira en un hueco ocupado inserta ahí; en uno vacío añade al final.
+      const at = Math.min(to, digits.length);
+      const next = digits.split('');
+      next.splice(at, 0, String(drag.digit));
+      onChange(Number(next.join('')));
     }
-    if (to === null || to === from) return;
-    const reordered = moveIndex(digits.split(''), from, Math.max(0, Math.min(rowCount - 1, to)));
-    onChange(Number(reordered.join('')));
   };
 
-  const handleRowPointerCancel = () => {
+  const cancelDrag = () => {
     setDrag(null);
   };
 
@@ -123,16 +159,19 @@ export default function DigitAnswer({
               data-testid="digit-row"
               data-digit-index={i}
               data-filled="true"
-              data-dragging={drag?.index === i ? 'true' : 'false'}
+              data-dragging={drag?.kind === 'slot' && drag.index === i ? 'true' : 'false'}
               onPointerDown={(e) => handleRowPointerDown(e, i)}
-              onPointerMove={handleRowPointerMove}
-              onPointerUp={handleRowPointerUp}
-              onPointerCancel={handleRowPointerCancel}
+              onPointerMove={handleDragMove}
+              onPointerUp={handleDragEnd}
+              onPointerCancel={cancelDrag}
               style={{
                 touchAction: 'none',
-                transform: drag?.index === i ? `translateX(${drag.dx}px)` : undefined,
-                zIndex: drag?.index === i ? 10 : undefined,
-                position: drag?.index === i ? 'relative' : undefined,
+                transform:
+                  drag?.kind === 'slot' && drag.index === i
+                    ? `translate(${drag.dx}px, ${drag.dy}px)`
+                    : undefined,
+                zIndex: drag?.kind === 'slot' && drag.index === i ? 10 : undefined,
+                position: drag?.kind === 'slot' && drag.index === i ? 'relative' : undefined,
                 cursor: 'grab',
               }}
               className={`flex min-h-12 min-w-12 items-center justify-center rounded-lg border-2 px-3 py-1 text-2xl font-bold tabular-nums ${filledStyle}`}
@@ -153,18 +192,31 @@ export default function DigitAnswer({
         )}
       </div>
       <div data-testid="digit-strip" className="flex max-w-64 flex-wrap justify-center gap-1.5">
-        {[1, 2, 3, 4, 5, 6, 7, 8, 9, 0].map((d) => (
-          <button
-            key={d}
-            type="button"
-            data-testid={`digit-${d}`}
-            onClick={() => append(d)}
-            disabled={full}
-            className="min-h-12 min-w-12 cursor-pointer rounded-lg border bg-white px-3 py-2 text-xl font-bold tabular-nums disabled:cursor-not-allowed disabled:opacity-40"
-          >
-            {d}
-          </button>
-        ))}
+        {[1, 2, 3, 4, 5, 6, 7, 8, 9, 0].map((d) => {
+          const dragging = drag?.kind === 'strip' && drag.digit === d;
+          return (
+            <button
+              key={d}
+              type="button"
+              data-testid={`digit-${d}`}
+              onClick={() => handleStripClick(d)}
+              onPointerDown={(e) => handleStripPointerDown(e, d)}
+              onPointerMove={handleDragMove}
+              onPointerUp={handleDragEnd}
+              onPointerCancel={cancelDrag}
+              disabled={full}
+              style={{
+                touchAction: 'none',
+                transform: dragging ? `translate(${drag.dx}px, ${drag.dy}px)` : undefined,
+                zIndex: dragging ? 10 : undefined,
+                position: dragging ? 'relative' : undefined,
+              }}
+              className="min-h-12 min-w-12 cursor-pointer rounded-lg border bg-white px-3 py-2 text-xl font-bold tabular-nums disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              {d}
+            </button>
+          );
+        })}
       </div>
       <button
         type="button"

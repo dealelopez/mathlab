@@ -111,19 +111,24 @@ export default function NumberLine({
     >
       {/* Línea base */}
       <line x1={lineStart} y1={baseY} x2={lineEnd} y2={baseY} stroke="#374151" strokeWidth={3} strokeLinecap="round" />
-      {/* Marcas */}
-      {ticks.map((t) => (
-        <line
-          key={t}
-          x1={xOf(t)}
-          y1={baseY - 8}
-          x2={xOf(t)}
-          y2={baseY + 8}
-          stroke="#374151"
-          strokeWidth={2}
-          data-testid="numberline-tick"
-        />
-      ))}
+      {/* Marcas: altas en números rotulados, cortas en el resto (para contar) */}
+      {ticks.map((t) => {
+        const major = showNumber(t);
+        const half = major ? 10 : 5;
+        return (
+          <line
+            key={t}
+            x1={xOf(t)}
+            y1={baseY - half}
+            x2={xOf(t)}
+            y2={baseY + half}
+            stroke={major ? '#374151' : '#9CA3AF'}
+            strokeWidth={major ? 2 : 1.5}
+            data-testid="numberline-tick"
+            data-major={major ? 'true' : undefined}
+          />
+        );
+      })}
       {/* Números */}
       {ticks
         .filter(showNumber)

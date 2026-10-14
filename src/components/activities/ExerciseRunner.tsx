@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { Fragment, useEffect, useState } from 'react';
 import type {
   ExerciseType,
   DifficultyLevel,
@@ -7,15 +7,15 @@ import type {
 } from '../../types';
 import type { Exercise, Answer } from '../../engine/types';
 import { ExerciseEngine } from '../../engine/engine';
+import { visibleNumbersFor } from '../../engine/generators/placement';
 import ActivityShell from './ActivityShell';
 import Rekenrek from '../manipulatives/Rekenrek';
 import Abacus, { type AbacusColumn } from '../manipulatives/Abacus';
 import TenFrame from '../manipulatives/TenFrame';
 import NumberLine from '../manipulatives/NumberLine';
 import AnswerSlot from '../primitives/AnswerSlot';
-import AnswerChip from '../primitives/AnswerChip';
-import DigitAnswer from '../primitives/DigitAnswer';
-import { DragDropProvider, useDragDrop } from '../primitives/DragDropContext';
+import { DragDropProvider } from '../primitives/DragDropContext';
+import { NumberTile, TileSlots, TileChip, tileClass, useTileDrop } from '../primitives/NumberTiles';
 
 export interface ExerciseRunnerProps {
   /** Tipo de ejercicio */
@@ -99,73 +99,122 @@ function ManipulativeView({
       />
     );
   }
-  // numberline (identify): marcador fijo de solo lectura
+  // numberline (identify): marcador fijo de solo lectura, con rótulos graduados
   const [lo, hi] = cfg.numberLineRange ?? [0, 10];
   return (
     <NumberLine
       min={lo}
       max={hi}
+      showNumbers={visibleNumbersFor(lo, hi)}
       markers={[{ position: exercise.setup.initialValue ?? 0, color: '#3B82F6' }]}
     />
   );
 }
 
-/** Interior del modo drag de decompose (necesita el contexto). */
-function DecomposeDragInner({
-  options,
+/** Tira libre de decompose: ecuación + dígitos 0-9 que se tocan O arrastran. */
+function DecomposeStrip({
+  target,
   slots,
-  usedIds,
+  selected,
   prefilledIndex,
-  onDropSlot,
-  onClearSlot,
+  onSelectSlot,
+  onDigit,
+  onClear,
+  onDropAt,
 }: {
-  options: number[];
+  target: number;
   slots: (number | null)[];
-  usedIds: string[];
+  selected: number;
   prefilledIndex: number;
-  onDropSlot: (index: number, value: number) => void;
-  onClearSlot: (index: number) => void;
+  onSelectSlot: (index: number) => void;
+  onDigit: (d: number) => void;
+  onClear: () => void;
+  onDropAt: (index: number, value: number) => void;
 }) {
-  const { setOnDrop } = useDragDrop();
+  return (
+    <DragDropProvider>
+      <DecomposeStripInner
+        target={target}
+        slots={slots}
+        selected={selected}
+        prefilledIndex={prefilledIndex}
+        onSelectSlot={onSelectSlot}
+        onDigit={onDigit}
+        onClear={onClear}
+        onDropAt={onDropAt}
+      />
+    </DragDropProvider>
+  );
+}
 
-  useEffect(() => {
-    setOnDrop((slotId, value) => {
-      const m = /^dslot-(\d+)$/.exec(slotId);
-      if (m) onDropSlot(Number(m[1]), value);
-    });
-    return () => setOnDrop(null);
-  }, [setOnDrop, onDropSlot]);
+function DecomposeStripInner(props: {
+  target: number;
+  slots: (number | null)[];
+  selected: number;
+  prefilledIndex: number;
+  onSelectSlot: (index: number) => void;
+  onDigit: (d: number) => void;
+  onClear: () => void;
+  onDropAt: (index: number, value: number) => void;
+}) {
+  const { target, slots, selected, prefilledIndex, onSelectSlot, onDigit, onClear, onDropAt } =
+    props;
+  useTileDrop('dslot', onDropAt);
 
   return (
-    <div className="flex flex-col gap-3">
-      <div className="flex items-center gap-2">
+    <div className="flex flex-col items-center gap-4">
+      <div className="flex items-center justify-center gap-2">
+        <span className="text-4xl font-bold text-orange-500">{target} =</span>
         {slots.map((v, i) => (
-          <div
-            key={i}
-            onClick={v !== null && i !== prefilledIndex ? () => onClearSlot(i) : undefined}
-            style={v !== null && i !== prefilledIndex ? { cursor: 'pointer' } : undefined}
-            title={v !== null && i !== prefilledIndex ? 'Toca para quitar' : undefined}
-          >
-            <AnswerSlot id={`dslot-${i}`} value={v} onChange={() => {}} mode="drag-target" readOnly={i === prefilledIndex} />
-          </div>
+          <Fragment key={i}>
+            {i > 0 && <span className="text-3xl font-bold text-slate-400">+</span>}
+            <div
+              onClick={i !== prefilledIndex ? () => onSelectSlot(i) : undefined}
+              style={i !== prefilledIndex ? { cursor: 'pointer' } : undefined}
+              title={i !== prefilledIndex ? 'Toca para elegir este hueco' : undefined}
+            >
+              <NumberTile
+                kind={i === prefilledIndex ? 'fixed' : v === null ? 'empty' : 'placed'}
+                value={v}
+                testId="answer-slot"
+                slotId={`dslot-${i}`}
+                selected={i === selected && i !== prefilledIndex}
+                readOnly={i === prefilledIndex}
+              />
+            </div>
+          </Fragment>
         ))}
       </div>
-      <div className="flex flex-wrap gap-2">
-        {options.map((opt, i) => (
-          <AnswerChip
-            key={`chip-${i}`}
-            id={`chip-${i}`}
-            value={opt}
-            used={usedIds.includes(`chip-${i}`)}
+      <div data-testid="decompose-strip" className="flex flex-wrap justify-center gap-2">
+        {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map((d) => (
+          <TileChip
+            key={d}
+            prefix="strip"
+            index={d}
+            value={d}
+            testId={`strip-${d}`}
+            highlight={slots.includes(d)}
+            onPlace={(_i, v) => onDigit(v)}
           />
         ))}
+        <button
+          data-testid="strip-clear"
+          onClick={onClear}
+          aria-label="Borrar"
+          className={`${tileClass('option')} cursor-pointer text-2xl font-bold text-slate-900`}
+        >
+          ⌫
+        </button>
       </div>
-      <p className="text-xs text-slate-500">Arrastra un número a cada hueco. Toca un hueco lleno para vaciarlo.</p>
+      <p className="text-xs text-slate-500">
+        Toca un hueco y luego un número, o arrastra el número al hueco. Toca ⌫ para borrar el
+        hueco elegido.
+      </p>
     </div>
   );
 }
 
-/** "N = ___ + ___": slots por arrastre o por teclado. */
+/** "N = ___ + ___": tira de dígitos o widget unificado de huecos + opciones. */
 function DecomposeView({
   exercise,
   onAnswer,
@@ -182,44 +231,51 @@ function DecomposeView({
     if (exercise.setup.prefilledValue != null) init[0] = exercise.setup.prefilledValue;
     return init;
   });
-  const [usedIds, setUsedIds] = useState<string[]>([]);
+  // Hueco seleccionado para la tira de dígitos (fijo hasta tocar otro).
+  // Sin auto-avance: pulsar un dígito sustituye el valor del seleccionado.
+  const [selected, setSelected] = useState(() => (prefilledIndex === 0 ? 1 : 0));
 
   const commit = (next: (number | null)[]) => {
     setSlots(next);
     onAnswer(next as number[]);
   };
 
+  const pressDigit = (d: number) => {
+    if (selected === prefilledIndex) return;
+    const next = [...slots];
+    next[selected] = d;
+    commit(next);
+  };
+
+  const pressClear = () => {
+    if (selected === prefilledIndex) return;
+    const next = [...slots];
+    next[selected] = null;
+    commit(next);
+  };
+
   if (exercise.answerMode === 'free') {
     return (
-      <div className="flex items-center gap-2">
-        <span className="text-2xl font-bold">{target} =</span>
-        {slots.map((v, i) => (
-          <AnswerSlot
-            key={i}
-            id={`dslot-${i}`}
-            value={v}
-            onChange={(nv) => {
-              if (i === prefilledIndex) return;
-              const next = [...slots];
-              next[i] = nv;
-              commit(next);
-            }}
-            mode="input"
-            readOnly={i === prefilledIndex}
-          />
-        ))}
-      </div>
+      <DecomposeStrip
+        target={target}
+        slots={slots}
+        selected={selected}
+        prefilledIndex={prefilledIndex}
+        onSelectSlot={setSelected}
+        onDigit={pressDigit}
+        onClear={pressClear}
+        onDropAt={(i, v) => {
+          if (i === prefilledIndex) return;
+          const next = [...slots];
+          next[i] = v;
+          commit(next);
+        }}
+      />
     );
   }
 
   const handleDropSlot = (index: number, value: number) => {
     if (index < 0 || index >= slots.length || index === prefilledIndex) return;
-    // Marca usado el primer chip libre con ese valor
-    const options = exercise.setup.options ?? [];
-    const chipIdx = options.findIndex(
-      (opt, i) => opt === value && !usedIds.includes(`chip-${i}`),
-    );
-    if (chipIdx >= 0) setUsedIds((prev) => [...prev, `chip-${chipIdx}`]);
     const next = [...slots];
     next[index] = value;
     commit(next);
@@ -227,108 +283,27 @@ function DecomposeView({
 
   const handleClearSlot = (index: number) => {
     if (index === prefilledIndex) return;
-    const prev = slots[index];
     const next = [...slots];
     next[index] = null;
     commit(next);
-    // Libera un chip usado con ese valor
-    if (prev !== null) {
-      const options = exercise.setup.options ?? [];
-      const usedIdx = options.findIndex(
-        (opt, i) => opt === prev && usedIds.includes(`chip-${i}`),
-      );
-      if (usedIdx >= 0) {
-        const id = `chip-${usedIdx}`;
-        setUsedIds((ids) => ids.filter((x) => x !== id));
-      }
-    }
   };
 
   return (
-    <DragDropProvider>
-      <div className="flex items-center gap-2">
-        <span className="text-2xl font-bold">{target} =</span>
-        <DecomposeDragInner
-          options={exercise.setup.options ?? []}
-          slots={slots}
-          usedIds={usedIds}
-          prefilledIndex={prefilledIndex}
-          onDropSlot={handleDropSlot}
-          onClearSlot={handleClearSlot}
-        />
-      </div>
-    </DragDropProvider>
+    <TileSlots
+      prefix="dslot"
+      slots={slots}
+      options={exercise.setup.options ?? []}
+      onDropSlot={handleDropSlot}
+      onClearSlot={handleClearSlot}
+      lockedIndexes={prefilledIndex >= 0 ? [prefilledIndex] : []}
+      lead={<span className="text-4xl font-bold text-orange-500">{target} =</span>}
+      separator={<span className="text-3xl font-bold text-slate-400">+</span>}
+      hint="Arrastra un número a cada hueco o tócalo y luego toca un hueco. Toca un hueco lleno para vaciarlo."
+    />
   );
 }
 
-/** Interior del modo drag de series (necesita el contexto). */
-function SeriesDragInner({
-  visibleValues,
-  hiddenAnswers,
-  options,
-  usedIds,
-  onDropSlot,
-}: {
-  visibleValues: (number | null)[];
-  hiddenAnswers: (number | null)[];
-  options: number[];
-  usedIds: string[];
-  onDropSlot: (hiddenIndex: number, value: number) => void;
-}) {
-  const { setOnDrop } = useDragDrop();
-
-  useEffect(() => {
-    setOnDrop((slotId, value) => {
-      const m = /^sslot-(\d+)$/.exec(slotId);
-      if (m) onDropSlot(Number(m[1]), value);
-    });
-    return () => setOnDrop(null);
-  }, [setOnDrop, onDropSlot]);
-
-  let hiddenSeen = -1;
-  return (
-    <div className="flex flex-col gap-3">
-      <div className="flex flex-wrap items-center gap-2">
-        {visibleValues.map((v, i) =>
-          v !== null ? (
-            <span
-              key={i}
-              className="flex min-h-12 min-w-12 items-center justify-center rounded-xl border-2 border-slate-300 bg-slate-50 px-3 py-2 text-2xl font-bold tabular-nums"
-            >
-              {v}
-            </span>
-          ) : (
-            (() => {
-              hiddenSeen++;
-              const k = hiddenSeen;
-              return (
-                <AnswerSlot
-                  key={i}
-                  id={`sslot-${k}`}
-                  value={hiddenAnswers[k] ?? null}
-                  onChange={() => {}}
-                  mode="drag-target"
-                />
-              );
-            })()
-          ),
-        )}
-      </div>
-      <div className="flex flex-wrap gap-2">
-        {options.map((opt, i) => (
-          <AnswerChip
-            key={`chip-${i}`}
-            id={`chip-${i}`}
-            value={opt}
-            used={usedIds.includes(`chip-${i}`)}
-          />
-        ))}
-      </div>
-    </div>
-  );
-}
-
-/** "Completa la serie": huecos en línea + chips o teclado. */
+/** "Completa la serie": huecos en línea + widget unificado (drag o tira). */
 function SeriesView({
   exercise,
   onAnswer,
@@ -341,7 +316,6 @@ function SeriesView({
   const [hiddenAnswers, setHiddenAnswers] = useState<(number | null)[]>(
     Array.from({ length: hiddenCount }, () => null),
   );
-  const [usedIds, setUsedIds] = useState<string[]>([]);
 
   const commit = (next: (number | null)[]) => {
     setHiddenAnswers(next);
@@ -386,125 +360,81 @@ function SeriesView({
 
   const handleDropSlot = (hiddenIndex: number, value: number) => {
     if (hiddenIndex < 0 || hiddenIndex >= hiddenAnswers.length) return;
-    const options = exercise.setup.options ?? [];
-    const chipIdx = options.findIndex(
-      (opt, i) => opt === value && !usedIds.includes(`chip-${i}`),
-    );
-    if (chipIdx >= 0) setUsedIds((prev) => [...prev, `chip-${chipIdx}`]);
     const next = [...hiddenAnswers];
     next[hiddenIndex] = value;
     commit(next);
   };
 
   return (
-    <DragDropProvider>
-      <SeriesDragInner
-        visibleValues={visibleValues}
-        hiddenAnswers={hiddenAnswers}
-        options={exercise.setup.options ?? []}
-        usedIds={usedIds}
-        onDropSlot={handleDropSlot}
-      />
-    </DragDropProvider>
+    <TileSlots
+      prefix="sslot"
+      slots={hiddenAnswers}
+      options={exercise.setup.options ?? []}
+      onDropSlot={handleDropSlot}
+      hint="Arrastra un número a cada hueco o tócalo y luego toca un hueco."
+      renderSlots={(slotNodes) => {
+        let hiddenSeen = -1;
+        return (
+          <div className="flex flex-wrap items-center justify-center gap-2">
+            {visibleValues.map((v, i) =>
+              v !== null ? (
+                <span
+                  key={`vis-${i}`}
+                  className="flex h-[84px] w-16 items-center justify-center rounded-xl border-2 border-slate-300 bg-slate-50 text-2xl font-bold tabular-nums"
+                >
+                  {v}
+                </span>
+              ) : (
+                <Fragment key={`hid-${i}`}>{slotNodes[++hiddenSeen]}</Fragment>
+              ),
+            )}
+          </div>
+        );
+      }}
+    />
   );
 }
 
-/** Identify con opciones: estado del hueco + chips usados. */
-function IdentifyDrag({
-  exercise,
-  answer,
+/** Identify libre: un hueco por cifra + dígitos 0-9 reutilizables.
+ *  Mismo componente y gestos que decompose (tocar hueco + número, sustituir). */
+function IdentifyFree({
+  digitCount,
   onAnswer,
 }: {
-  exercise: Exercise;
-  answer: number | null;
+  digitCount: number;
   onAnswer: (a: Answer | null) => void;
 }) {
-  const [usedIds, setUsedIds] = useState<string[]>([]);
-
-  const handleDropSlot = (dropped: number) => {
-    const options = exercise.setup.options ?? [];
-    const prev = answer;
-    // Libera el chip que ocupaba el hueco, si lo había
-    let nextUsed = usedIds;
-    if (prev !== null) {
-      const prevIdx = options.findIndex((opt, i) => opt === prev && usedIds.includes(`chip-${i}`));
-      if (prevIdx >= 0) {
-        nextUsed = usedIds.filter((x) => x !== `chip-${prevIdx}`);
-        setUsedIds(nextUsed);
-      }
-    }
-    const chipIdx = options.findIndex((opt, i) => opt === dropped && !nextUsed.includes(`chip-${i}`));
-    if (chipIdx >= 0) setUsedIds((ids) => [...ids, `chip-${chipIdx}`]);
-    onAnswer(dropped);
-  };
-
-  const handleClearSlot = () => {
-    if (answer === null) return;
-    const options = exercise.setup.options ?? [];
-    const usedIdx = options.findIndex((opt, i) => opt === answer && usedIds.includes(`chip-${i}`));
-    if (usedIdx >= 0) {
-      const id = `chip-${usedIdx}`;
-      setUsedIds((ids) => ids.filter((x) => x !== id));
-    }
-    onAnswer(null);
-  };
-
-  return (
-    <DragDropProvider>
-      <IdentifyDragInner
-        options={exercise.setup.options ?? []}
-        value={answer}
-        usedIds={usedIds}
-        onDropSlot={handleDropSlot}
-        onClearSlot={handleClearSlot}
-      />
-    </DragDropProvider>
+  const [digits, setDigits] = useState<(number | null)[]>(() =>
+    Array.from({ length: Math.max(1, Math.min(3, digitCount)) }, () => null),
   );
-}
 
-/** Interior del modo drag de identify: un hueco + chips con números completos. */
-function IdentifyDragInner({
-  options,
-  value,
-  usedIds,
-  onDropSlot,
-  onClearSlot,
-}: {
-  options: number[];
-  value: number | null;
-  usedIds: string[];
-  onDropSlot: (value: number) => void;
-  onClearSlot: () => void;
-}) {
-  const { setOnDrop } = useDragDrop();
-
-  useEffect(() => {
-    setOnDrop((slotId, dropped) => {
-      if (slotId === 'islot-0') onDropSlot(dropped);
-    });
-    return () => setOnDrop(null);
-  }, [setOnDrop, onDropSlot]);
+  const commit = (next: (number | null)[]) => {
+    setDigits(next);
+    onAnswer(
+      next.every((d): d is number => typeof d === 'number') ? Number(next.join('')) : null,
+    );
+  };
 
   return (
-    <div className="flex flex-col items-center gap-3">
-      <div
-        onClick={value !== null ? onClearSlot : undefined}
-        style={value !== null ? { cursor: 'pointer' } : undefined}
-        title={value !== null ? 'Toca para quitar' : undefined}
-      >
-        <AnswerSlot id="islot-0" value={value} onChange={() => {}} mode="drag-target" />
-      </div>
-      <div className="flex flex-wrap justify-center gap-2">
-        {options.map((opt, i) => (
-          <AnswerChip
-            key={`chip-${i}`}
-            id={`chip-${i}`}
-            value={opt}
-            used={usedIds.includes(`chip-${i}`)}
-          />
-        ))}
-      </div>
-      <p className="text-xs text-slate-500">Arrastra el número correcto al hueco.</p>
+    <div className="flex flex-col items-center gap-2">
+      <span className="text-lg font-semibold">Tu respuesta:</span>
+      <TileSlots
+        prefix="islot"
+        slots={digits}
+        options={[0, 1, 2, 3, 4, 5, 6, 7, 8, 9]}
+        reusableOptions
+        onDropSlot={(i, v) => {
+          const next = [...digits];
+          next[i] = v;
+          commit(next);
+        }}
+        onClearSlot={(i) => {
+          const next = [...digits];
+          next[i] = null;
+          commit(next);
+        }}
+        hint="Toca un hueco y luego un número."
+      />
     </div>
   );
 }
@@ -645,22 +575,21 @@ export default function ExerciseRunner({
           <div className="flex flex-col items-center gap-4">
             <ManipulativeView key={current.id} exercise={current} onAnswer={() => {}} />
             {current.answerMode === 'drag' && (current.setup.options?.length ?? 0) > 0 ? (
-              <IdentifyDrag
+              <TileSlots
                 key={`drag-${current.id}`}
-                exercise={current}
-                answer={typeof userAnswer === 'number' ? userAnswer : null}
-                onAnswer={handleAnswer}
+                prefix="islot"
+                slots={[typeof userAnswer === 'number' ? userAnswer : null]}
+                options={current.setup.options ?? []}
+                onDropSlot={(_i, v) => handleAnswer(v)}
+                onClearSlot={() => handleAnswer(null)}
+                hint="Arrastra el número correcto al hueco o tócalo."
               />
             ) : (
-              <div className="flex flex-col items-center gap-2">
-                <span className="text-lg font-semibold">Tu respuesta:</span>
-                <DigitAnswer
-                  value={typeof userAnswer === 'number' ? userAnswer : null}
-                  onChange={handleAnswer}
-                  maxDigits={3}
-                  digitCount={String(current.setup.initialValue ?? 0).length}
-                />
-              </div>
+              <IdentifyFree
+                key={`free-${current.id}`}
+                digitCount={String(current.setup.initialValue ?? 0).length}
+                onAnswer={handleAnswer}
+              />
             )}
           </div>
         )}

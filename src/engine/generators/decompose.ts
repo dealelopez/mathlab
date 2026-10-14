@@ -51,6 +51,29 @@ function splitIntoParts(target: number, parts: number): number[] {
   return [c1, c2 - c1, target - c2];
 }
 
+/**
+ * Reparte el target en `parts` sumandos de UNA cifra (1-9).
+ * Para el modo free: la tira solo admite una cifra por hueco, así que
+ * el ejercicio solo es resoluble si todas las partes son 1-9.
+ * Válido para target 2-18 (2 partes) y 3-27 (3 partes).
+ */
+function splitSingleDigits(target: number, parts: number): number[] {
+  if (parts <= 2) {
+    const a = randomInt(Math.max(1, target - 9), Math.min(9, target - 1));
+    return [a, target - a];
+  }
+  for (let i = 0; i < 50; i++) {
+    const a = randomInt(1, 9);
+    const b = randomInt(1, 9);
+    const c = target - a - b;
+    if (c >= 1 && c <= 9) return [a, b, c];
+  }
+  // Respaldo determinista (siempre válido en 3-27)
+  const a = Math.min(9, target - 2);
+  const b = Math.min(9, target - a - 1);
+  return [a, b, target - a - b];
+}
+
 /** "N = ___ + ___" (cualquier combinación que sume vale). */
 export function generateDecompose(
   difficulty: DifficultyLevel,
@@ -58,11 +81,22 @@ export function generateDecompose(
   answerMode: AnswerMode = 'drag',
 ): Exercise {
   const config = getDifficultyConfig('decompose', difficulty);
-  const target = randomInt(config.numberRange[0], config.numberRange[1]);
-  const parts = splitIntoParts(target, config.decomposeParts);
+  const numParts = config.decomposeParts;
+  // En modo free la tira solo admite una cifra por hueco: se recorta el
+  // rango al máximo resoluble (2 partes → 18, 3 partes → 27) y se reparte
+  // en cifras 1-9. En drag no hay límite (las opciones llevan el valor).
+  const [rangeLo, rangeHi] =
+    answerMode === 'free'
+      ? [Math.max(config.numberRange[0], numParts), Math.min(config.numberRange[1], numParts * 9)]
+      : config.numberRange;
+  const target = randomInt(rangeLo, rangeHi);
+  const parts =
+    answerMode === 'free'
+      ? splitSingleDigits(target, numParts)
+      : splitIntoParts(target, numParts);
 
   const setup: Exercise['setup'] = {
-    parts: config.decomposeParts,
+    parts: numParts,
     prefilledValue: difficulty <= 2 ? parts[0]! : null,
   };
   if (answerMode === 'drag') {

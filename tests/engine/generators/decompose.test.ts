@@ -89,6 +89,27 @@ describe('generateDecompose', () => {
       expect(sum).toBeLessThanOrEqual(hi);
     }
   });
+
+  it('modo free: todas las partes son de una cifra (siempre resoluble con la tira)', () => {
+    for (const l of [1, 2, 3, 4, 5] as DifficultyLevel[]) {
+      for (let i = 0; i < 50; i++) {
+        const ex = generateDecompose(l, undefined, 'free');
+        const parts = ex.correctAnswer as number[];
+        expect(parts.every((p) => p >= 1 && p <= 9)).toBe(true);
+        const target = parts.reduce((a, b) => a + b, 0);
+        expect(target).toBeLessThanOrEqual(parts.length * 9);
+        expect(target).toBeGreaterThanOrEqual(parts.length);
+      }
+    }
+  });
+
+  it('modo free: el prefill también es de una cifra', () => {
+    for (let i = 0; i < 30; i++) {
+      const ex = generateDecompose(2, undefined, 'free');
+      expect(ex.setup.prefilledValue).toBeGreaterThanOrEqual(1);
+      expect(ex.setup.prefilledValue).toBeLessThanOrEqual(9);
+    }
+  });
 });
 
 describe('generateDistractors', () => {

@@ -31,6 +31,13 @@ describe('NumberLine', () => {
     expect(nums.map((n) => n.textContent)).toEqual(['0', '5', '10']);
   });
 
+  it('marcas mayores en rotulados y menores en el resto (para contar)', () => {
+    const { container } = render(<NumberLine min={0} max={10} step={1} showNumbers={[0, 5, 10]} />);
+    const ticks = Array.from(container.querySelectorAll('[data-testid="numberline-tick"]'));
+    expect(ticks).toHaveLength(11);
+    expect(ticks.filter((t) => t.getAttribute('data-major') === 'true')).toHaveLength(3);
+  });
+
   it('markers=[{position: 7, color: red}]: marcador visible en posición 7', () => {
     const { container } = render(
       <NumberLine min={0} max={10} markers={[{ position: 7, color: 'red', label: '7' }]} />,

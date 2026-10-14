@@ -33,19 +33,6 @@ function dragChipToSlot(container: HTMLElement, chip: HTMLElement, slot: HTMLEle
   }
 }
 
-/** Rellena un AnswerSlot en modo input mediante su NumberPad inline. */
-function fillInputSlot(container: HTMLElement, slotIndex: number, value: number) {
-  const slots = Array.from(
-    container.querySelectorAll('[data-testid="answer-slot"]'),
-  ) as HTMLElement[];
-  fireEvent.click(slots[slotIndex]!);
-  const pad = container.querySelector('[data-testid="number-pad"]')!;
-  for (const ch of String(value)) {
-    fireEvent.click(pad.querySelector(`[data-testid="numpad-${ch}"]`)!);
-  }
-  fireEvent.click(pad.querySelector('[data-testid="numpad-confirm"]')!);
-}
-
 describe('ExerciseRunner', () => {
   it('al montar, genera un ejercicio y lo renderiza', () => {
     const { getByTestId } = render(<ExerciseRunner exerciseType="represent" difficulty={2} />);
@@ -70,6 +57,24 @@ describe('ExerciseRunner', () => {
     expect(
       container.querySelector('[data-testid="feedback-banner"][data-type="incorrect"]'),
     ).toBeInTheDocument();
+  });
+
+  it('identify + recta: rótulos graduados (nunca todos los números)', () => {
+    const { container } = render(
+      <ExerciseRunner exerciseType="identify" difficulty={2} manipulative="numberline" />,
+    );
+    const nums = Array.from(container.querySelectorAll('[data-testid="numberline-number"]'));
+    expect(nums.map((n) => n.textContent)).toEqual(['0', '5', '10']);
+    // Pero las marcas de cada unidad siguen existiendo para contar
+    expect(container.querySelectorAll('[data-testid="numberline-tick"]').length).toBeGreaterThan(
+      nums.length,
+    );
+  });
+
+  it('placement: rótulos graduados según el tramo', () => {
+    const { container } = render(<ExerciseRunner exerciseType="placement" difficulty={3} />);
+    const nums = Array.from(container.querySelectorAll('[data-testid="numberline-number"]'));
+    expect(nums.map((n) => n.textContent)).toEqual(['0', '5', '10', '15', '20']);
   });
 
   it('flujo placement: colocar marcador valida automáticamente', () => {
@@ -170,7 +175,7 @@ describe('ExerciseRunner', () => {
     expect(container.querySelectorAll('[data-testid="tenframe-cell"]')).toHaveLength(20);
   });
 
-  it('identify + rekenrek: readOnly con valor fijo y DigitAnswer para responder', () => {
+  it('identify + rekenrek: readOnly con valor fijo y entrada por dígitos', () => {
     const { container, getByTestId } = render(
       <ExerciseRunner exerciseType="identify" difficulty={1} manipulative="rekenrek" />,
     );
@@ -178,20 +183,24 @@ describe('ExerciseRunner', () => {
     // readOnly: click no cambia el valor
     fireEvent.click(container.querySelectorAll('[role="slider"] circle')[0]!);
     expect(getByTestId('rekenrek-total')).toHaveTextContent(`Total: ${shown}`);
-    // Entrada por dígitos visible
-    expect(getByTestId('digit-strip')).toBeInTheDocument();
-    expect(getByTestId('digit-back')).toBeInTheDocument();
+    // Un hueco por cifra (1-5 → 1 hueco) + teclado 0-9 del mismo componente que decompose
+    expect(container.querySelectorAll('[data-slot-id^="islot-"]')).toHaveLength(1);
+    expect(container.querySelectorAll('[data-testid="answer-chip"]')).toHaveLength(10);
     expect(container.textContent).toContain('Tu respuesta:');
   });
 
-  function answerIdentify(
-    container: HTMLElement,
-    getByTestId: (id: string) => HTMLElement,
-    value: number,
-  ) {
+  function fillIdentify(container: HTMLElement, value: number) {
     String(value)
       .split('')
-      .forEach((d) => fireEvent.click(getByTestId(`digit-${d}`)));
+      .forEach((d, i) => {
+        fireEvent.click(container.querySelector(`[data-slot-id="islot-${i}"]`)!);
+        const chips = Array.from(container.querySelectorAll('[data-testid="answer-chip"]'));
+        fireEvent.click(chips.find((c) => c.textContent === d)!);
+      });
+  }
+
+  function answerIdentify(container: HTMLElement, value: number) {
+    fillIdentify(container, value);
     fireEvent.click(checkBtn(container));
   }
 
@@ -200,7 +209,7 @@ describe('ExerciseRunner', () => {
       <ExerciseRunner exerciseType="identify" difficulty={1} manipulative="rekenrek" />,
     );
     const shown = Number(getByTestId('rekenrek-total').textContent!.match(/Total: (\d+)/)![1]);
-    answerIdentify(container, getByTestId, shown);
+    answerIdentify(container, shown);
     expect(correctBanner(container)).toBeInTheDocument();
   });
 
@@ -209,24 +218,44 @@ describe('ExerciseRunner', () => {
       <ExerciseRunner exerciseType="identify" difficulty={1} manipulative="rekenrek" />,
     );
     const shown = Number(getByTestId('rekenrek-total').textContent!.match(/Total: (\d+)/)![1]);
-    answerIdentify(container, getByTestId, shown + 1);
+    answerIdentify(container, shown + 1);
     expect(incorrectBanner(container)).toBeInTheDocument();
   });
 
-  it('identify: borrar tras un fallo deja el valor vacío (sin 0 atascado)', () => {
+  it('identify: tocar un hueco lleno lo vacía (sin 0 atascado)', () => {
     const { container, getByTestId } = render(
       <ExerciseRunner exerciseType="identify" difficulty={1} manipulative="rekenrek" />,
     );
     const shown = Number(getByTestId('rekenrek-total').textContent!.match(/Total: (\d+)/)![1]);
     const wrong = shown + 1; // rango 1-5: wrong es una cifra distinta
-    fireEvent.click(getByTestId(`digit-${wrong}`));
+    fillIdentify(container, wrong);
     fireEvent.click(checkBtn(container));
     expect(incorrectBanner(container)).toBeInTheDocument();
-    fireEvent.click(getByTestId('digit-back'));
-    const rows = Array.from(container.querySelectorAll('[data-testid="digit-row"]'));
-    expect(rows).toHaveLength(1);
-    rows.forEach((r) => expect(r).toHaveAttribute('data-filled', 'false'));
-    expect(rows.some((r) => r.textContent === '0')).toBe(false);
+    // Tocar el hueco lleno lo vacía
+    const slot = container.querySelector('[data-slot-id="islot-0"]')! as HTMLElement;
+    fireEvent.click(slot.parentElement!);
+    expect(
+      (container.querySelector('[data-slot-id="islot-0"]')! as HTMLElement).textContent,
+    ).toBe('?');
+    // Comprobar vacío → incorrecto, sin 0 atascado en el hueco
+    fireEvent.click(checkBtn(container));
+    expect(incorrectBanner(container)).toBeInTheDocument();
+    expect(
+      (container.querySelector('[data-slot-id="islot-0"]')! as HTMLElement).textContent,
+    ).toBe('?');
+  });
+
+  it('identify free multicifra: un hueco por cifra compone el número', () => {
+    const { container, getByTestId } = render(
+      <ExerciseRunner exerciseType="identify" difficulty={3} manipulative="rekenrek" />,
+    );
+    const shown = Number(
+      getByTestId('rekenrek-total').textContent!.match(/Total: (\d+)/)![1],
+    );
+    const digits = String(shown).split('');
+    expect(container.querySelectorAll('[data-slot-id^="islot-"]')).toHaveLength(digits.length);
+    answerIdentify(container, shown);
+    expect(correctBanner(container)).toBeInTheDocument();
   });
 
   it('identify con opciones: chips con números completos y flujo drag correcto', () => {
@@ -295,7 +324,7 @@ describe('ExerciseRunner', () => {
     );
     const shown = Number(getByTestId('abacus-number').textContent);
     const expectedRows = String(shown).length;
-    expect(container.querySelectorAll('[data-testid="digit-row"]')).toHaveLength(expectedRows);
+    expect(container.querySelectorAll('[data-slot-id^="islot-"]')).toHaveLength(expectedRows);
   });
 
   it('identify + ábaco: número fijo visible y entrada por dígitos', () => {
@@ -303,7 +332,8 @@ describe('ExerciseRunner', () => {
       <ExerciseRunner exerciseType="identify" difficulty={2} manipulative="abacus" />,
     );
     expect(getByTestId('abacus-number')).toBeInTheDocument();
-    expect(getByTestId('digit-strip')).toBeInTheDocument();
+    expect(container.querySelectorAll('[data-slot-id^="islot-"]').length).toBeGreaterThan(0);
+    expect(container.querySelectorAll('[data-testid="answer-chip"]')).toHaveLength(10);
     expect(container.querySelectorAll('[role="slider"]')).toHaveLength(1);
   });
 
@@ -434,29 +464,147 @@ describe('ExerciseRunner', () => {
     void b;
   });
 
-  it('decompose free: escribir partes que suman → correct; que no suman → incorrect', () => {
+  it('decompose free: la tira de dígitos siempre está visible (0-9 + borrar)', () => {
+    const { getByTestId } = render(
+      <ExerciseRunner exerciseType="decompose" difficulty={2} answerMode="free" />,
+    );
+    const strip = getByTestId('decompose-strip');
+    for (let d = 0; d <= 9; d++) {
+      expect(strip.querySelector(`[data-testid="strip-${d}"]`)).toBeInTheDocument();
+    }
+    expect(strip.querySelector('[data-testid="strip-clear"]')).toBeInTheDocument();
+  });
+
+  it('decompose free: pulsar dígitos rellena y comprobar valida lo mostrado', () => {
     const { container, getByTestId } = render(
-      <ExerciseRunner exerciseType="decompose" difficulty={3} answerMode="free" />,
+      <ExerciseRunner exerciseType="decompose" difficulty={2} answerMode="free" />,
     );
     const target = Number(
       getByTestId('activity-instruction').textContent!.match(/(\d+)\s*=/)![1],
     );
-    expect(container.querySelector('[data-testid="number-pad"]')).toBeNull();
-    fillInputSlot(container, 0, 1);
-    fillInputSlot(container, 1, target - 1);
+    const prefilled = Number(
+      (container.querySelector('[data-slot-id="dslot-0"]')! as HTMLElement).textContent,
+    );
+    const remainder = target - prefilled;
+    expect(remainder).toBeGreaterThan(0);
+    expect(remainder).toBeLessThanOrEqual(9);
+    // El hueco 1 ya viene seleccionado; pulsar el dígito lo fija
+    fireEvent.click(container.querySelector('[data-testid="strip-0"]')!);
+    fireEvent.click(
+      container.querySelector(`[data-testid="strip-${remainder}"]`)!,
+    );
+    expect(
+      (container.querySelector('[data-slot-id="dslot-1"]')! as HTMLElement).textContent,
+    ).toBe(String(remainder));
+    // La tecla usada se marca pero sigue disponible
+    expect(
+      container.querySelector(`[data-testid="strip-${remainder}"]`)!.getAttribute('data-kind'),
+    ).toBe('picked');
     fireEvent.click(checkBtn(container));
     expect(correctBanner(container)).toBeInTheDocument();
   });
 
-  it('decompose free: partes que no suman → incorrect', () => {
+  it('decompose free: pulsar otro dígito sustituye, no añade (nunca "35")', () => {
     const { container, getByTestId } = render(
-      <ExerciseRunner exerciseType="decompose" difficulty={3} answerMode="free" />,
+      <ExerciseRunner exerciseType="decompose" difficulty={2} answerMode="free" />,
     );
     const target = Number(
       getByTestId('activity-instruction').textContent!.match(/(\d+)\s*=/)![1],
     );
-    fillInputSlot(container, 0, target);
-    fillInputSlot(container, 1, target);
+    const prefilled = Number(
+      (container.querySelector('[data-slot-id="dslot-0"]')! as HTMLElement).textContent,
+    );
+    const remainder = target - prefilled;
+    // Elegir hueco 1 y pulsar 3 y luego 5: el hueco muestra 5, no "35"
+    fireEvent.click(container.querySelector('[data-slot-id="dslot-1"]')!);
+    fireEvent.click(container.querySelector('[data-testid="strip-3"]')!);
+    expect(
+      (container.querySelector('[data-slot-id="dslot-1"]')! as HTMLElement).textContent,
+    ).toBe('3');
+    fireEvent.click(container.querySelector('[data-testid="strip-5"]')!);
+    expect(
+      (container.querySelector('[data-slot-id="dslot-1"]')! as HTMLElement).textContent,
+    ).toBe('5');
+    // Fijar el resto correcto y comprobar → correct
+    fireEvent.click(
+      container.querySelector(`[data-testid="strip-${remainder}"]`)!,
+    );
+    fireEvent.click(checkBtn(container));
+    expect(correctBanner(container)).toBeInTheDocument();
+  });
+
+  it('decompose free: arrastrar un dígito de la tira al hueco lo coloca', () => {
+    const { container, getByTestId } = render(
+      <ExerciseRunner exerciseType="decompose" difficulty={2} answerMode="free" />,
+    );
+    const target = Number(
+      getByTestId('activity-instruction').textContent!.match(/(\d+)\s*=/)![1],
+    );
+    const prefilled = Number(
+      (container.querySelector('[data-slot-id="dslot-0"]')! as HTMLElement).textContent,
+    );
+    const remainder = target - prefilled;
+    const chips = Array.from(container.querySelectorAll('[data-testid^="strip-"]'));
+    const chip = chips.find(
+      (c) => c.textContent === String(remainder) && c.getAttribute('data-testid') !== 'strip-clear',
+    )! as HTMLElement;
+    dragChipToSlot(
+      container,
+      chip,
+      container.querySelector('[data-slot-id="dslot-1"]')! as HTMLElement,
+    );
+    expect(
+      (container.querySelector('[data-slot-id="dslot-1"]')! as HTMLElement).textContent,
+    ).toBe(String(remainder));
+    fireEvent.click(checkBtn(container));
+    expect(correctBanner(container)).toBeInTheDocument();
+  });
+
+  it('decompose free: arrastrar al hueco bloqueado se ignora', () => {
+    const { container } = render(
+      <ExerciseRunner exerciseType="decompose" difficulty={2} answerMode="free" />,
+    );
+    const prefilled = (container.querySelector('[data-slot-id="dslot-0"]')! as HTMLElement)
+      .textContent;
+    const chips = Array.from(container.querySelectorAll('[data-testid^="strip-"]'));
+    const chip = chips.find(
+      (c) => c.textContent === '0' && c.getAttribute('data-testid') !== 'strip-clear',
+    )! as HTMLElement;
+    dragChipToSlot(
+      container,
+      chip,
+      container.querySelector('[data-slot-id="dslot-0"]')! as HTMLElement,
+    );
+    expect(
+      (container.querySelector('[data-slot-id="dslot-0"]')! as HTMLElement).textContent,
+    ).toBe(prefilled);
+  });
+
+  it('decompose free: borrar vacía el hueco elegido', () => {
+    const { container } = render(
+      <ExerciseRunner exerciseType="decompose" difficulty={2} answerMode="free" />,
+    );
+    fireEvent.click(container.querySelector('[data-slot-id="dslot-1"]')!);
+    fireEvent.click(container.querySelector('[data-testid="strip-4"]')!);
+    expect(
+      (container.querySelector('[data-slot-id="dslot-1"]')! as HTMLElement).textContent,
+    ).toBe('4');
+    fireEvent.click(container.querySelector('[data-testid="strip-clear"]')!);
+    expect(
+      (container.querySelector('[data-slot-id="dslot-1"]')! as HTMLElement).textContent,
+    ).toBe('?');
+    fireEvent.click(checkBtn(container));
+    const banner = container.querySelector('[data-testid="feedback-banner"]')!;
+    expect(banner.textContent).toContain('Rellena todos los huecos');
+  });
+
+  it('decompose free: partes que no suman → incorrect', () => {
+    const { container } = render(
+      <ExerciseRunner exerciseType="decompose" difficulty={2} answerMode="free" />,
+    );
+    // Hueco 1 = 0: suma distinta del target (las partes deben ser > 0)
+    fireEvent.click(container.querySelector('[data-slot-id="dslot-1"]')!);
+    fireEvent.click(container.querySelector('[data-testid="strip-0"]')!);
     fireEvent.click(checkBtn(container));
     expect(incorrectBanner(container)).toBeInTheDocument();
   });

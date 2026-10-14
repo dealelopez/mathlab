@@ -40,8 +40,8 @@ const defaultValue: DragDropContextValue = {
 const DragDropContext = createContext<DragDropContextValue>(defaultValue);
 
 /**
- * DragDropProvider — conecta AnswerChip con AnswerSlot sin depender del
- * Drag and Drop API nativo (no funciona en iOS touch).
+ * DragDropProvider — conecta TileChip con los huecos (TileSlot) sin depender
+ * del Drag and Drop API nativo (no funciona en iOS touch).
  * El chip detecta el drop con `document.elementFromPoint` al soltar.
  */
 export function DragDropProvider({ children }: { children: ReactNode }) {

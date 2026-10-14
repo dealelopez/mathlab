@@ -26,7 +26,7 @@ function nearbyDistractors(shown: number, lo: number, hi: number, count: number)
 
 /**
  * "¿Qué número muestra el manipulativo?"
- * - free: el niño lo escribe (DigitAnswer).
+ * - free: el niño lo escribe con NumberTiles (un hueco por cifra).
  * - drag: elige entre opciones con el número completo (chips arrastrables).
  */
 export function generateIdentify(

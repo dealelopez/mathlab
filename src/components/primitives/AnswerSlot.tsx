@@ -10,7 +10,7 @@ export interface AnswerSlotProps {
   onChange: (value: number | null) => void;
   /**
    * Modo de interacción:
-   * - 'drag-target': acepta drop de AnswerChip
+   * - 'drag-target': (legado, sin uso: el drag unificado vive en NumberTiles)
    * - 'input': al tocar, abre NumberPad
    */
   mode: 'drag-target' | 'input';

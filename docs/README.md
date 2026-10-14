@@ -24,7 +24,7 @@
 | 5 | Ábaco escolar + tutorial interactivo | [task-05-abaco-tutorial.md](task-05-abaco-tutorial.md) | ⬜ |
 | 6 | TenFrame (marco de diez) | [task-06-ten-frame.md](task-06-ten-frame.md) | ⬜ |
 | 7 | NumberLine (recta numérica) | [task-07-number-line.md](task-07-number-line.md) | ⬜ |
-| 8 | Primitivas de respuesta (AnswerSlot, AnswerChip, NumberPad) | [task-08-answer-primitives.md](task-08-answer-primitives.md) | ⬜ |
+| 8 | Primitivas de respuesta (NumberTiles, AnswerSlot, NumberPad) | [task-08-answer-primitives.md](task-08-answer-primitives.md) | ⬜ |
 | 9 | ExerciseEngine + generadores + validadores | [task-09-exercise-engine.md](task-09-exercise-engine.md) | ⬜ |
 | 10 | ActivityShell + FeedbackBanner + ExerciseRunner | [task-10-activity-shell.md](task-10-activity-shell.md) | ⬜ |
 | 11 | Ejercicios de Representar e Identificar | [task-11-represent-identify.md](task-11-represent-identify.md) | ⬜ |
@@ -58,8 +58,8 @@
 │  NumberLine            │  ├── difficulty.ts (config niveles)  │
 │                        │  └── types.ts                       │
 ├────────────────────────┴─────────────────────────────────────┤
-│  PRIMITIVAS: Bead, BeadRow, Counter, AnswerSlot,             │
-│              AnswerChip, NumberPad                            │
+│  PRIMITIVAS: Bead, BeadRow, Counter, NumberTiles,         │
+│              AnswerSlot, NumberPad                            │
 ├──────────────────────────────────────────────────────────────┤
 │  HOOKS: usePointerDrag                                       │
 └──────────────────────────────────────────────────────────────┘
@@ -151,8 +151,8 @@ mathlab/
 │   │   │   ├── Bead.tsx                 # Cuenta SVG individual
 │   │   │   ├── BeadRow.tsx              # Fila de cuentas (base de Rekenrek y Ábaco)
 │   │   │   ├── Counter.tsx              # Ficha circular para TenFrame
-│   │   │   ├── AnswerSlot.tsx           # Hueco de respuesta (drag-target o input)
-│   │   │   ├── AnswerChip.tsx           # Pieza arrastrable con valor
+│   │   │   ├── AnswerSlot.tsx           # Hueco con NumberPad (modo free series)
+│   │   │   ├── NumberTiles.tsx          # Tarjetas, huecos y opciones drag&drop (rombo azul)
 │   │   │   └── NumberPad.tsx            # Teclado numérico para niños
 │   │   ├── manipulatives/
 │   │   │   ├── Rekenrek.tsx             # N filas de BeadRow (5 rojo + 5 blanco)

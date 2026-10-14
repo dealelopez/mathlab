@@ -83,7 +83,7 @@ interface HomeProps {
 
 ```
 ┌───────────────────────────────────────────────┐
-│  🧮 Math Practice                             │
+│  🧮 Mathlab                                    │
 │                                               │
 │  ┌─────────┐  ┌─────────┐  ┌─────────┐      │
 │  │Rekenrek │  │  Ábaco  │  │Ten Frame│      │

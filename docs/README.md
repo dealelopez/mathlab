@@ -1,10 +1,10 @@
-# math-practice — Plan de Implementación
+# mathlab — Plan de Implementación
 
 ## Proyecto
 
 | Campo | Valor |
 |-------|-------|
-| **Nombre** | math-practice |
+| **Nombre** | mathlab |
 | **Objetivo** | Webapp de práctica matemática individual para niños de 3-8 años, con manipulativos interactivos y generación procedural de ejercicios |
 | **Stack** | React 19 + Vite 6 + Tailwind 4 + TypeScript 5 |
 | **Tests** | Vitest 3 + React Testing Library + jsdom |
@@ -118,7 +118,7 @@ BeadRow (configurable)
 ## Estructura de archivos objetivo
 
 ```
-math-practice/
+mathlab/
 ├── index.html
 ├── package.json
 ├── vite.config.ts

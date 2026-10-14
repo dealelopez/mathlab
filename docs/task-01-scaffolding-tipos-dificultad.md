@@ -22,14 +22,14 @@ Esta es la primera tarea. No depende de ninguna otra. Establece:
 ### Estructura de directorios
 
 ```bash
-mkdir -p math-practice/{src/{hooks,engine/{generators,validators},components/{primitives,manipulatives,activities,tutorial,layout},lib},tests/{engine/{generators,validators},components,lib},docs}
+mkdir -p mathlab/{src/{hooks,engine/{generators,validators},components/{primitives,manipulatives,activities,tutorial,layout},lib},tests/{engine/{generators,validators},components,lib},docs}
 ```
 
 ### package.json
 
 ```json
 {
-  "name": "math-practice",
+  "name": "mathlab",
   "private": true,
   "version": "1.0.0",
   "type": "module",
@@ -132,7 +132,7 @@ import '@testing-library/jest-dom/vitest';
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Math Practice</title>
+    <title>Mathlab</title>
   </head>
   <body>
     <div id="root"></div>
@@ -172,7 +172,7 @@ Placeholder mínimo. Se completará en la tarea 15 con la navegación real.
 export default function App() {
   return (
     <div className="p-4">
-      <h1 className="text-2xl font-bold">Math Practice</h1>
+      <h1 className="text-2xl font-bold">Mathlab</h1>
       <p>Proyecto en construcción.</p>
     </div>
   );
@@ -865,7 +865,7 @@ describe('distributeToRows', () => {
 ## Criterio de éxito
 
 - [ ] `pnpm install` sin errores
-- [ ] `pnpm run dev` arranca y muestra "Math Practice" en el navegador
+- [ ] `pnpm run dev` arranca y muestra "Mathlab" en el navegador
 - [ ] `pnpm test` ejecuta los tests de `difficulty.test.ts` y `math.test.ts` — todos pasan
 - [ ] La estructura de directorios completa existe (vacía donde corresponda)
 - [ ] `src/types.ts` y `src/engine/types.ts` compilan sin errores

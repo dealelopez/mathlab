@@ -16,6 +16,8 @@ export interface AnswerSlotProps {
   mode: 'drag-target' | 'input';
   /** Texto placeholder cuando vacío (default "?") */
   placeholder?: string;
+  /** Si true, no acepta interacción (p. ej. valor pre-rellenado) */
+  readOnly?: boolean;
   /** Estado de feedback: null (neutro), 'correct', 'incorrect' */
   status?: 'correct' | 'incorrect' | null;
   /** Tamaño del slot en px (default 48) */
@@ -32,6 +34,7 @@ export default function AnswerSlot({
   onChange,
   mode,
   placeholder = '?',
+  readOnly = false,
   status = null,
   size = 48,
 }: AnswerSlotProps) {
@@ -39,7 +42,7 @@ export default function AnswerSlot({
   const [draft, setDraft] = useState('');
 
   const openPad = () => {
-    if (mode !== 'input') return;
+    if (mode !== 'input' || readOnly) return;
     setDraft(value === null ? '' : String(value));
     setPadOpen(true);
   };
@@ -59,13 +62,14 @@ export default function AnswerSlot({
         data-testid="answer-slot"
         data-slot-id={mode === 'drag-target' ? id : undefined}
         data-status={status ?? 'none'}
-        onClick={mode === 'input' ? openPad : undefined}
+        data-readonly={readOnly ? 'true' : undefined}
+        onClick={mode === 'input' && !readOnly ? openPad : undefined}
         style={{
           width: size,
           height: size,
-          cursor: mode === 'input' ? 'pointer' : undefined,
+          cursor: mode === 'input' && !readOnly ? 'pointer' : undefined,
         }}
-        className={`flex items-center justify-center rounded-lg border-2 text-2xl font-bold tabular-nums ${border}`}
+        className={`flex items-center justify-center rounded-lg border-2 text-2xl font-bold tabular-nums ${border}${mode === 'input' && padOpen ? ' ring-2 ring-blue-400' : ''}${readOnly ? ' opacity-80' : ''}`}
       >
         {mode === 'input' && padOpen ? (draft === '' ? placeholder : draft) : (value === null ? placeholder : value)}
       </div>

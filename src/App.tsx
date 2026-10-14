@@ -5,6 +5,7 @@ import type { ExerciseType, DifficultyLevel, Manipulative, AnswerMode } from './
 const TYPES: { value: ExerciseType; label: string }[] = [
   { value: 'represent', label: 'Representar' },
   { value: 'identify', label: 'Identificar' },
+  { value: 'decompose', label: 'Descomponer' },
 ];
 
 const MODES: { value: AnswerMode; label: string }[] = [
@@ -19,7 +20,7 @@ const MANIPULATIVES: { value: Manipulative; label: string; for: ExerciseType[] }
   { value: 'numberline', label: 'Recta numérica', for: ['identify'] },
 ];
 
-// Demo temporal de la tarea 11. Se sustituye en la tarea 15 con la navegación real.
+// Demo temporal de la tarea 12. Se sustituye en la tarea 15 con la navegación real.
 export default function App() {
   const [type, setType] = useState<ExerciseType>('represent');
   const [manipulative, setManipulative] = useState<Manipulative>('rekenrek');
@@ -29,9 +30,11 @@ export default function App() {
   const [runId, setRunId] = useState(0);
 
   const validManipulatives = MANIPULATIVES.filter((m) => m.for.includes(type));
+  // Descomponer no usa manipulativo: se oculta el selector
+  const needsManipulative = validManipulatives.length > 0;
   const safeManipulative = validManipulatives.some((m) => m.value === manipulative)
     ? manipulative
-    : validManipulatives[0]!.value;
+    : (validManipulatives[0]?.value ?? 'rekenrek');
 
   const restart = () => {
     setDone(false);
@@ -43,7 +46,7 @@ export default function App() {
   return (
     <div className="p-4">
       <h1 className="text-2xl font-bold">Mathlab</h1>
-      <p>Demo temporal task-11: representar e identificar.</p>
+      <p>Demo temporal task-12: representar, identificar y descomponer.</p>
 
       <div className="mt-4 flex flex-wrap items-center gap-2">
         <select
@@ -61,6 +64,7 @@ export default function App() {
             </option>
           ))}
         </select>
+        {needsManipulative && (
         <select
           aria-label="Manipulativo"
           value={safeManipulative}
@@ -76,6 +80,7 @@ export default function App() {
             </option>
           ))}
         </select>
+        )}
         <select
           aria-label="Dificultad"
           value={difficulty}
@@ -124,7 +129,7 @@ export default function App() {
             key={`${type}-${safeManipulative}-${difficulty}-${mode}-${runId}`}
             exerciseType={type}
             difficulty={difficulty}
-            manipulative={safeManipulative}
+            manipulative={needsManipulative ? safeManipulative : undefined}
             answerMode={mode}
             exerciseCount={3}
             onComplete={() => setDone(true)}

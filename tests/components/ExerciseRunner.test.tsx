@@ -16,6 +16,36 @@ function incorrectBanner(container: HTMLElement): Element | null {
   return container.querySelector('[data-testid="feedback-banner"][data-type="incorrect"]');
 }
 
+function chipValues(container: HTMLElement): HTMLElement[] {
+  return Array.from(container.querySelectorAll('[data-testid="answer-chip"]')) as HTMLElement[];
+}
+
+function dragChipToSlot(container: HTMLElement, chip: HTMLElement, slot: HTMLElement) {
+  void container;
+  fireEvent.pointerDown(chip, { clientX: 100, clientY: 200, pointerId: 1, bubbles: true });
+  fireEvent.pointerMove(chip, { clientX: 100, clientY: 100, pointerId: 1, bubbles: true });
+  const orig = document.elementFromPoint;
+  document.elementFromPoint = (() => slot) as unknown as typeof document.elementFromPoint;
+  try {
+    fireEvent.pointerUp(chip, { clientX: 100, clientY: 100, pointerId: 1, bubbles: true });
+  } finally {
+    document.elementFromPoint = orig;
+  }
+}
+
+/** Rellena un AnswerSlot en modo input mediante su NumberPad inline. */
+function fillInputSlot(container: HTMLElement, slotIndex: number, value: number) {
+  const slots = Array.from(
+    container.querySelectorAll('[data-testid="answer-slot"]'),
+  ) as HTMLElement[];
+  fireEvent.click(slots[slotIndex]!);
+  const pad = container.querySelector('[data-testid="number-pad"]')!;
+  for (const ch of String(value)) {
+    fireEvent.click(pad.querySelector(`[data-testid="numpad-${ch}"]`)!);
+  }
+  fireEvent.click(pad.querySelector('[data-testid="numpad-confirm"]')!);
+}
+
 describe('ExerciseRunner', () => {
   it('al montar, genera un ejercicio y lo renderiza', () => {
     const { getByTestId } = render(<ExerciseRunner exerciseType="represent" difficulty={2} />);
@@ -284,5 +314,236 @@ describe('ExerciseRunner', () => {
     expect(container.querySelectorAll('[role="slider"]')).toHaveLength(2);
     rerender(<ExerciseRunner exerciseType="represent" difficulty={4} manipulative="rekenrek" />);
     expect(container.querySelectorAll('[role="slider"]')).toHaveLength(2);
+  });
+
+  it('decompose drag: instrucción, opciones y flujo correcto con cualquier combinación válida', () => {
+    const { container, getByTestId } = render(
+      <ExerciseRunner exerciseType="decompose" difficulty={3} answerMode="drag" />,
+    );
+    const target = Number(
+      getByTestId('activity-instruction').textContent!.match(/(\d+)\s*=/)![1],
+    );
+    expect(target).toBeGreaterThan(0);
+    // Opciones: partes correctas + distractores
+    let chips = chipValues(container);
+    expect(chips.length).toBeGreaterThan(2);
+    // Buscar dos chips que sumen el target (cualquier combo vale)
+    const vals = chips.map((c) => Number(c.textContent));
+    let a = -1;
+    let b = -1;
+    outer: for (let i = 0; i < vals.length; i++) {
+      for (let j = i + 1; j < vals.length; j++) {
+        if (vals[i]! + vals[j]! === target) {
+          a = i;
+          b = j;
+          break outer;
+        }
+      }
+    }
+    expect(a).toBeGreaterThanOrEqual(0);
+    dragChipToSlot(
+      container,
+      chips[a]!,
+      container.querySelector('[data-slot-id="dslot-0"]')! as HTMLElement,
+    );
+    chips = chipValues(container);
+    const second = chips.find(
+      (c) => Number(c.textContent) === vals[b] && c.textContent !== null,
+    )!;
+    dragChipToSlot(
+      container,
+      second,
+      container.querySelector('[data-slot-id="dslot-1"]')! as HTMLElement,
+    );
+    expect(
+      (container.querySelector('[data-slot-id="dslot-0"]')! as HTMLElement).textContent,
+    ).toBe(String(vals[a]));
+    fireEvent.click(checkBtn(container));
+    expect(correctBanner(container)).toBeInTheDocument();
+  });
+
+  it('decompose drag: combinación que no suma → feedback incorrect', () => {
+    const { container, getByTestId } = render(
+      <ExerciseRunner exerciseType="decompose" difficulty={3} answerMode="drag" />,
+    );
+    const target = Number(
+      getByTestId('activity-instruction').textContent!.match(/(\d+)\s*=/)![1],
+    );
+    const chips = chipValues(container);
+    const vals = chips.map((c) => Number(c.textContent));
+    let a = -1;
+    let b = -1;
+    outer: for (let i = 0; i < vals.length; i++) {
+      for (let j = i + 1; j < vals.length; j++) {
+        if (vals[i]! + vals[j]! !== target) {
+          a = i;
+          b = j;
+          break outer;
+        }
+      }
+    }
+    expect(a).toBeGreaterThanOrEqual(0);
+    dragChipToSlot(
+      container,
+      chips[a]!,
+      container.querySelector('[data-slot-id="dslot-0"]')! as HTMLElement,
+    );
+    const rest = chipValues(container).filter((c) => c !== chips[a]);
+    const second = rest.find((c) => Number(c.textContent) === vals[b])!;
+    dragChipToSlot(
+      container,
+      second,
+      container.querySelector('[data-slot-id="dslot-1"]')! as HTMLElement,
+    );
+    fireEvent.click(checkBtn(container));
+    expect(incorrectBanner(container)).toBeInTheDocument();
+  });
+
+  it('decompose drag: tocar un hueco lleno lo vacía', () => {
+    const { container, getByTestId } = render(
+      <ExerciseRunner exerciseType="decompose" difficulty={3} answerMode="drag" />,
+    );
+    const target = Number(
+      getByTestId('activity-instruction').textContent!.match(/(\d+)\s*=/)![1],
+    );
+    const chips = chipValues(container);
+    const vals = chips.map((c) => Number(c.textContent));
+    let a = -1;
+    let b = -1;
+    outer: for (let i = 0; i < vals.length; i++) {
+      for (let j = i + 1; j < vals.length; j++) {
+        if (vals[i]! + vals[j]! === target) {
+          a = i;
+          b = j;
+          break outer;
+        }
+      }
+    }
+    const slot0 = container.querySelector('[data-slot-id="dslot-0"]')! as HTMLElement;
+    dragChipToSlot(container, chips[a]!, slot0);
+    expect(
+      (container.querySelector('[data-slot-id="dslot-0"]')! as HTMLElement).textContent,
+    ).toBe(String(vals[a]));
+    // Toca el hueco lleno → se vacía (placeholder "?")
+    fireEvent.click(
+      (container.querySelector('[data-slot-id="dslot-0"]')! as HTMLElement).parentElement!,
+    );
+    expect(
+      (container.querySelector('[data-slot-id="dslot-0"]')! as HTMLElement).textContent,
+    ).toBe('?');
+    void b;
+  });
+
+  it('decompose free: escribir partes que suman → correct; que no suman → incorrect', () => {
+    const { container, getByTestId } = render(
+      <ExerciseRunner exerciseType="decompose" difficulty={3} answerMode="free" />,
+    );
+    const target = Number(
+      getByTestId('activity-instruction').textContent!.match(/(\d+)\s*=/)![1],
+    );
+    expect(container.querySelector('[data-testid="number-pad"]')).toBeNull();
+    fillInputSlot(container, 0, 1);
+    fillInputSlot(container, 1, target - 1);
+    fireEvent.click(checkBtn(container));
+    expect(correctBanner(container)).toBeInTheDocument();
+  });
+
+  it('decompose free: partes que no suman → incorrect', () => {
+    const { container, getByTestId } = render(
+      <ExerciseRunner exerciseType="decompose" difficulty={3} answerMode="free" />,
+    );
+    const target = Number(
+      getByTestId('activity-instruction').textContent!.match(/(\d+)\s*=/)![1],
+    );
+    fillInputSlot(container, 0, target);
+    fillInputSlot(container, 1, target);
+    fireEvent.click(checkBtn(container));
+    expect(incorrectBanner(container)).toBeInTheDocument();
+  });
+
+  it('decompose: comprobar con un hueco vacío avisa sin validar', () => {
+    const { container } = render(
+      <ExerciseRunner exerciseType="decompose" difficulty={3} answerMode="free" />,
+    );
+    fireEvent.click(checkBtn(container));
+    const banner = container.querySelector('[data-testid="feedback-banner"]')!;
+    expect(banner.getAttribute('data-type')).toBe('incorrect');
+    expect(banner.textContent).toContain('Rellena todos los huecos');
+  });
+
+  it('decompose drag: comprobar sin rellenar avisa sin validar', () => {
+    const { container } = render(
+      <ExerciseRunner exerciseType="decompose" difficulty={3} answerMode="drag" />,
+    );
+    fireEvent.click(checkBtn(container));
+    const banner = container.querySelector('[data-testid="feedback-banner"]')!;
+    expect(banner.textContent).toContain('Rellena todos los huecos');
+  });
+
+  it('decompose dificultad 5: tres huecos y cualquier triple válido vale', () => {
+    const { container, getByTestId } = render(
+      <ExerciseRunner exerciseType="decompose" difficulty={5} answerMode="drag" />,
+    );
+    const target = Number(
+      getByTestId('activity-instruction').textContent!.match(/(\d+)\s*=/)![1],
+    );
+    expect(container.querySelectorAll('[data-slot-id^="dslot-"]')).toHaveLength(3);
+    const chips = chipValues(container);
+    const vals = chips.map((c) => Number(c.textContent));
+    let trio: number[] = [];
+    outer: for (let i = 0; i < vals.length; i++) {
+      for (let j = i + 1; j < vals.length; j++) {
+        for (let k = j + 1; k < vals.length; k++) {
+          if (vals[i]! + vals[j]! + vals[k]! === target) {
+            trio = [i, j, k];
+            break outer;
+          }
+        }
+      }
+    }
+    expect(trio).toHaveLength(3);
+    const used = new Set<HTMLElement>();
+    trio.forEach((chipIdx, slotIdx) => {
+      const fresh = chipValues(container).filter((c) => !used.has(c));
+      const chip = fresh.find((c) => Number(c.textContent) === vals[chipIdx])!;
+      used.add(chip);
+      dragChipToSlot(
+        container,
+        chip,
+        container.querySelector(`[data-slot-id="dslot-${slotIdx}"]`)! as HTMLElement,
+      );
+    });
+    fireEvent.click(checkBtn(container));
+    expect(correctBanner(container)).toBeInTheDocument();
+  });
+
+  it('decompose pre-relleno (dificultad 1): primer hueco fijo y readOnly', () => {
+    const { container, getByTestId } = render(
+      <ExerciseRunner exerciseType="decompose" difficulty={1} answerMode="drag" />,
+    );
+    const target = Number(
+      getByTestId('activity-instruction').textContent!.match(/(\d+)\s*=/)![1],
+    );
+    const slot0 = container.querySelector('[data-slot-id="dslot-0"]')! as HTMLElement;
+    const prefilled = Number(slot0.textContent);
+    expect(prefilled).toBeGreaterThan(0);
+    expect(slot0.getAttribute('data-readonly')).toBe('true');
+    // Tocar el hueco pre-rellenado no lo vacía
+    fireEvent.click(slot0.parentElement!);
+    expect(
+      (container.querySelector('[data-slot-id="dslot-0"]')! as HTMLElement).textContent,
+    ).toBe(String(prefilled));
+    // Rellenar el hueco restante con target - prefilled → correct
+    const remainder = target - prefilled;
+    expect(remainder).toBeGreaterThan(0);
+    const chip = chipValues(container).find((c) => Number(c.textContent) === remainder)!;
+    expect(chip).toBeDefined();
+    dragChipToSlot(
+      container,
+      chip,
+      container.querySelector('[data-slot-id="dslot-1"]')! as HTMLElement,
+    );
+    fireEvent.click(checkBtn(container));
+    expect(correctBanner(container)).toBeInTheDocument();
   });
 });

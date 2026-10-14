@@ -115,12 +115,14 @@ function DecomposeDragInner({
   options,
   slots,
   usedIds,
+  prefilledIndex,
   onDropSlot,
   onClearSlot,
 }: {
   options: number[];
   slots: (number | null)[];
   usedIds: string[];
+  prefilledIndex: number;
   onDropSlot: (index: number, value: number) => void;
   onClearSlot: (index: number) => void;
 }) {
@@ -140,11 +142,11 @@ function DecomposeDragInner({
         {slots.map((v, i) => (
           <div
             key={i}
-            onClick={v !== null ? () => onClearSlot(i) : undefined}
-            style={v !== null ? { cursor: 'pointer' } : undefined}
-            title={v !== null ? 'Toca para quitar' : undefined}
+            onClick={v !== null && i !== prefilledIndex ? () => onClearSlot(i) : undefined}
+            style={v !== null && i !== prefilledIndex ? { cursor: 'pointer' } : undefined}
+            title={v !== null && i !== prefilledIndex ? 'Toca para quitar' : undefined}
           >
-            <AnswerSlot id={`dslot-${i}`} value={v} onChange={() => {}} mode="drag-target" />
+            <AnswerSlot id={`dslot-${i}`} value={v} onChange={() => {}} mode="drag-target" readOnly={i === prefilledIndex} />
           </div>
         ))}
       </div>
@@ -173,6 +175,8 @@ function DecomposeView({
 }) {
   const parts = exercise.setup.parts ?? (exercise.correctAnswer as number[]).length;
   const target = (exercise.correctAnswer as number[]).reduce((a, b) => a + b, 0);
+  // Índice pre-rellenado en dificultades bajas (el resto los rellena el niño)
+  const prefilledIndex = exercise.setup.prefilledValue != null ? 0 : -1;
   const [slots, setSlots] = useState<(number | null)[]>(() => {
     const init: (number | null)[] = Array.from({ length: parts }, () => null);
     if (exercise.setup.prefilledValue != null) init[0] = exercise.setup.prefilledValue;
@@ -195,11 +199,13 @@ function DecomposeView({
             id={`dslot-${i}`}
             value={v}
             onChange={(nv) => {
+              if (i === prefilledIndex) return;
               const next = [...slots];
               next[i] = nv;
               commit(next);
             }}
             mode="input"
+            readOnly={i === prefilledIndex}
           />
         ))}
       </div>
@@ -207,7 +213,7 @@ function DecomposeView({
   }
 
   const handleDropSlot = (index: number, value: number) => {
-    if (index < 0 || index >= slots.length) return;
+    if (index < 0 || index >= slots.length || index === prefilledIndex) return;
     // Marca usado el primer chip libre con ese valor
     const options = exercise.setup.options ?? [];
     const chipIdx = options.findIndex(
@@ -220,6 +226,7 @@ function DecomposeView({
   };
 
   const handleClearSlot = (index: number) => {
+    if (index === prefilledIndex) return;
     const prev = slots[index];
     const next = [...slots];
     next[index] = null;
@@ -245,6 +252,7 @@ function DecomposeView({
           options={exercise.setup.options ?? []}
           slots={slots}
           usedIds={usedIds}
+          prefilledIndex={prefilledIndex}
           onDropSlot={handleDropSlot}
           onClearSlot={handleClearSlot}
         />
@@ -579,7 +587,19 @@ export default function ExerciseRunner({
     setFeedbackMessage(result.message);
   };
 
-  const handleCheck = () => check((userAnswer ?? 0) as Answer);
+  const handleCheck = () => {
+    // decompose/series responden con un array por hueco: si falta alguno,
+    // avisar sin llamar al validador.
+    if (current.type === 'decompose' || current.type === 'series') {
+      const parts = userAnswer as (number | null)[] | null;
+      if (parts === null || parts.some((p) => typeof p !== 'number')) {
+        setFeedback('incorrect');
+        setFeedbackMessage('Rellena todos los huecos para comprobar');
+        return;
+      }
+    }
+    check((userAnswer ?? 0) as Answer);
+  };
 
   const handleNext = () => {
     if (index + 1 >= exerciseCount) {

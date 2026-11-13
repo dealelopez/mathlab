@@ -18,9 +18,12 @@ GitHub Pages, sin backend.
 ## Orden de lectura recomendado
 
 1. Este fichero.
-2. `docs/roadmap.md`: índice de tareas, mejoras e ideas.
-3. `docs/architecture.md`: capas y flujo de datos.
-4. `docs/development.md`: comandos y convenciones.
+2. `docs/guia-continuacion.md`: entorno, flujo obligatorio por tarea, reglas de producto
+   y trampas conocidas. **Imprescindible antes de tocar código.**
+3. `docs/roadmap.md`: índice de tareas; la sección «Siguientes tareas» lista las
+   especificaciones listas para ejecutar (`docs/task-NN-*.md`).
+4. `docs/architecture.md`: capas y flujo de datos.
+5. `docs/development.md`: comandos y convenciones.
 
 ## Estructura del código
 
@@ -81,6 +84,7 @@ GitHub Pages, sin backend.
   `packageManager` en `package.json` (pnpm 10).
 - Pendiente de comprobar a ojo en navegador e iPad: el diseño de Home, sandboxes y
   actividades solo está cubierto por tests y build.
-- Siguiente: ver `docs/roadmap.md` (TENFRAME-01, PROD-02, TECH-01 parcial, A11Y-01...).
-  Las decisiones abiertas están al final del roadmap.
+- Siguiente: `docs/roadmap.md`, sección «Siguientes tareas» (T16-T22, con spec cada
+  una). Las decisiones abiertas están al final del roadmap.
+- Regla de producto: **no mostrar el resultado de los ejercicios** en pantalla (BUG-05).
 - Análisis y resultados de la última ronda: `docs/261113--analisis-estado-proyecto.md`.

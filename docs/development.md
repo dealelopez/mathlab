@@ -57,6 +57,11 @@ en GitHub Pages en cada push a `main`. Detalle en [`guia-deploy.md`](guia-deploy
 - **Commits**: locales y con ID de mejora cuando aplique (`fix(BUG-01): ...`). No hacer
   `git push` sin pedirlo (ver `AGENTS.md`).
 
+## Retomar el trabajo
+
+Ver [`guia-continuacion.md`](guia-continuacion.md): entorno (`node` fuera del PATH),
+flujo por tarea, reglas de producto y trampas conocidas.
+
 ## Documentación
 
 - `docs/roadmap.md` es el índice de estado. Actualizarlo al completar una tarea.

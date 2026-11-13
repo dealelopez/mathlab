@@ -14,6 +14,9 @@ BUG-04 (ver las secciones correspondientes). El resto sigue pendiente.
 > resuelta el 2026-11-13: base verificada en
 > [`261113--analisis-estado-proyecto.md`](261113--analisis-estado-proyecto.md).
 
+> Las mejoras pendientes con especificación ejecutable están enlazadas desde la sección
+> «Siguientes tareas» de [`roadmap.md`](roadmap.md).
+
 ## Cómo leer este documento
 
 - **ID**: se usa en commits y conversaciones (`BUG-01`, `PROD-02`...).
@@ -159,6 +162,8 @@ el número que ya está en la instrucción, y las pistas no desvelan el resultad
 
 ### TENFRAME-01 — Interacción de rellenado
 
+**Spec ejecutable:** [`task-16-tenframe-rellenado.md`](task-16-tenframe-rellenado.md).
+
 Detalle en [261013--tenframe-interaccion.md](261013--tenframe-interaccion.md). Resumen: hoy cada toque suma o resta 1 ficha; el niño debería poder tocar una celda y rellenar **hasta esa celda**, y tocar una celda llena para vaciar **hasta esa celda**.
 
 **Decisión pendiente:** semántica exacta al tocar una celda llena. Opciones:
@@ -177,6 +182,8 @@ Propuesta: (a), porque mantiene el invariante "las fichas se colocan de izquierd
 
 ### PROD-02 — Resumen de sesión y progreso
 
+**Spec ejecutable:** [`task-19-resumen-sesion.md`](task-19-resumen-sesion.md).
+
 **Problema:** al terminar solo aparece "¡Sesión completada!". No se registran aciertos, fallos ni intentos.
 
 **Dirección:** `ExerciseRunner` acumula por ejercicio `{ correcto, intentos }` y llama a `onComplete(resumen)`. Una pantalla de resumen muestra aciertos a la primera, ejercicios que costaron más y botones "Repetir" / "Volver".
@@ -188,6 +195,8 @@ Propuesta: (a), porque mantiene el invariante "las fichas se colocan de izquierd
 **Dependencias:** conviene hacerlo después de BUG-01/03 y de TECH-01.
 
 ### PROD-03 — Persistencia local
+
+**Spec ejecutable:** [`task-20-persistencia-local.md`](task-20-persistencia-local.md).
 
 **Problema:** nada se guarda entre visitas.
 
@@ -204,6 +213,8 @@ Propuesta: (a), porque mantiene el invariante "las fichas se colocan de izquierd
 ## Accesibilidad y UX
 
 ### A11Y-01 — Teclado y lectores de pantalla en manipulativos
+
+**Spec ejecutable:** [`task-21-accesibilidad-teclado.md`](task-21-accesibilidad-teclado.md).
 
 **Problema:** hay pocos atributos ARIA (18 coincidencias de `aria-`/`role` en `src`). Los manipulativos son SVG con eventos de puntero. `TenFrame` declara `role="slider"` pero no responde a teclado. `Rekenrek`, `Abacus` y `NumberLine` tampoco.
 
@@ -224,6 +235,10 @@ Propuesta: (a), porque mantiene el invariante "las fichas se colocan de izquierd
 **Aceptación:** la app se instala en pantalla de inicio en iPad y abre sin conexión tras la primera visita.
 
 ### UX-02 — Refuerzo visual y sonoro
+
+> **Ojo con UX-03 (marcador verde tras fallar en placement):** muestra la posición
+> correcta y choca con la regla «no mostrar el resultado» (BUG-05). Requiere decisión del
+> usuario.
 
 **Dirección:** animación breve al acertar (ya existe `feedback-enter` en `index.css`), mensajes de feedback variados, sonido opcional con interruptor de silencio (apagado por defecto). Respetar `prefers-reduced-motion`.
 
@@ -250,6 +265,8 @@ Propuesta: (a), porque mantiene el invariante "las fichas se colocan de izquierd
 **Aceptación:** `pnpm lint` pasa sin errores; el commit de formato no mezcla cambios funcionales.
 
 ### TECH-03 — CI en pull requests
+
+**Spec ejecutable:** [`task-22-ci-pull-requests.md`](task-22-ci-pull-requests.md).
 
 **Problema:** `deploy.yml` solo se ejecuta en `push` a `main`; no hay verificación en ramas o PR.
 

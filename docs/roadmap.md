@@ -8,6 +8,9 @@ criterios de aceptación) está en
 [`261113--analisis-mejoras.md`](261113--analisis-mejoras.md). Este fichero solo
 lleva el estado.
 
+Para retomar el trabajo (sobre todo con un modelo con poco contexto) empieza por
+[`guia-continuacion.md`](guia-continuacion.md): entorno, flujo por tarea y trampas conocidas.
+
 Leyenda de estado: `[x]` hecho · `[ ]` pendiente · `[~]` parcial · 🔎 a verificar.
 
 ## Fase 0 — Construcción base ✓ completada
@@ -46,20 +49,41 @@ Un commit por ID, con test de regresión.
   test intermitente)
 - [x] BUG-05 Identify mostraba la respuesta escrita (Total, número o valor del manipulativo)
 
+## Siguientes tareas (listas para ejecutar)
+
+Cada una tiene una especificación autocontenida. Orden recomendado (de menos a más
+riesgo). Una tarea por sesión, un commit por tarea.
+
+| Orden | Spec | ID | Esfuerzo | Notas |
+|---|---|---|---|---|
+| 1 | [`task-16-tenframe-rellenado.md`](task-16-tenframe-rellenado.md) | TENFRAME-01 | S | Decisión (a)/(b) propuesta: (a) |
+| 2 | [`task-17-numberline-responsive.md`](task-17-numberline-responsive.md) | UX-04 | S | Solo escalado; el `step` queda fuera |
+| 3 | [`task-22-ci-pull-requests.md`](task-22-ci-pull-requests.md) | TECH-03 | S | No verificable en local |
+| 4 | [`task-18-dividir-numbertiles.md`](task-18-dividir-numbertiles.md) | TECH-01 (2.ª parte) | M | Refactor puro |
+| 5 | [`task-19-resumen-sesion.md`](task-19-resumen-sesion.md) | PROD-02 | M | Decisión: cualitativa con estrellas |
+| 6 | [`task-20-persistencia-local.md`](task-20-persistencia-local.md) | PROD-03 | S | Mejor tras la 5 |
+| 7 | [`task-21-accesibilidad-teclado.md`](task-21-accesibilidad-teclado.md) | A11Y-01 | M | Tres subtareas (A, B, C) |
+
+**Sin especificación, a propósito** (necesitan una decisión del usuario o un modelo más
+capaz): TECH-02 (ESLint/Prettier: dependencias nuevas), UX-01 (PWA: posible dependencia),
+UX-02 (sonido y animaciones), UX-03 (ver más abajo), PROD-04 (reglas pedagógicas),
+TECH-04 (RNG inyectable: cambio transversal en generadores).
+
 ## Fase 3 — Mejoras de producto
 
-- [ ] TENFRAME-01 Rellenado del TenFrame hasta la celda — detalle en
+- [ ] TENFRAME-01 Rellenado del TenFrame hasta la celda — spec
+  [`task-16-tenframe-rellenado.md`](task-16-tenframe-rellenado.md); contexto en
   [`261013--tenframe-interaccion.md`](261013--tenframe-interaccion.md)
-- [ ] PROD-02 Resumen de sesión y resultados
-- [ ] PROD-03 Persistencia local (`localStorage`)
-- [ ] A11Y-01 Teclado y ARIA en manipulativos
+- [ ] PROD-02 Resumen de sesión y resultados — [`task-19-resumen-sesion.md`](task-19-resumen-sesion.md)
+- [ ] PROD-03 Persistencia local (`localStorage`) — [`task-20-persistencia-local.md`](task-20-persistencia-local.md)
+- [ ] A11Y-01 Teclado y ARIA en manipulativos — [`task-21-accesibilidad-teclado.md`](task-21-accesibilidad-teclado.md)
 
 ## Fase 4 — Calidad y mantenimiento
 
 - [~] TECH-01 Dividir `ExerciseRunner.tsx` y `NumberTiles.tsx`. `ExerciseRunner`
-  hecho (622 → 191 líneas, vistas en `activities/views/`); falta `NumberTiles.tsx`
+  hecho (622 → 191 líneas, vistas en `activities/views/`); falta `NumberTiles.tsx` ([`task-18-dividir-numbertiles.md`](task-18-dividir-numbertiles.md))
 - [ ] TECH-02 ESLint y Prettier (nuevas devDependencies: confirmar)
-- [ ] TECH-03 CI en pull requests + paso de typecheck
+- [ ] TECH-03 CI en pull requests + paso de typecheck — [`task-22-ci-pull-requests.md`](task-22-ci-pull-requests.md)
 
 ## Ideas (sin fecha)
 
@@ -69,9 +93,11 @@ Un commit por ID, con test de regresión.
 - [ ] UX-02 Refuerzo visual y sonoro (sonido apagado por defecto)
 - [ ] TECH-04 RNG inyectable en generadores
 - [ ] UX-03 Marcador verde con la posición correcta tras fallar en placement (estaba en
-  la spec de T14 y no se implementó)
-- [ ] UX-04 `NumberLine` responsive: ancho fijo de 500 px sin `viewBox`, y step fijo en
-  la actividad de placement
+  la spec de T14 y no se implementó). **Choca con la regla «no mostrar el resultado de
+  los ejercicios» (BUG-05).** No implementar sin que el usuario lo confirme.
+- [ ] UX-04 `NumberLine` responsive (ancho fijo de 500 px sin `viewBox`) —
+  [`task-17-numberline-responsive.md`](task-17-numberline-responsive.md). El `step` fijo
+  de la actividad de placement queda aparte: cambiarlo altera la pedagogía.
 
 ## Decisiones
 
@@ -85,5 +111,7 @@ Son valores por defecto, reversibles; confirmar o cambiar.
 Abiertas:
 
 3. TENFRAME-01: al tocar una celda llena, ¿vaciar desde esa celda o quitar solo esa?
-4. PROD-02: ¿puntuación numérica o solo cualitativa?
+   (la spec T16 implementa «vaciar desde esa celda»).
+4. PROD-02: ¿puntuación numérica o solo cualitativa? (la spec T19 implementa estrellas).
 5. TECH-02 y UX-01: ¿se aceptan las nuevas dependencias?
+6. UX-03: ¿se permite mostrar la posición correcta tras fallar en placement?

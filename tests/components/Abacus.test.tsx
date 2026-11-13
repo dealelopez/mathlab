@@ -37,6 +37,56 @@ describe('Abacus', () => {
     expect(sliders(container)[0]!.getAttribute('aria-valuenow')).toBe('5');
   });
 
+  it('BUG-04 value=10 con una sola columna [U]: la fila muestra las 10 cuentas', () => {
+    const { container, getByTestId } = render(
+      <Abacus columns={[{ label: 'U', color: '#EF4444' }]} value={10} onChange={() => {}} />,
+    );
+    expect(sliders(container)[0]!.getAttribute('aria-valuenow')).toBe('10');
+    expect(getByTestId('abacus-number')).toHaveTextContent('10');
+  });
+
+  it('BUG-04 llenar las 10 cuentas de [U] se mantiene tras el rerender', () => {
+    const onChange = vi.fn();
+    const { container } = render(
+      <Abacus columns={[{ label: 'U', color: '#EF4444' }]} value={9} onChange={onChange} />,
+    );
+    fireEvent.click(sliders(container)[0]!.querySelectorAll('circle')[9]!);
+    expect(onChange).toHaveBeenCalledWith(10);
+  });
+
+  it('BUG-04 la columna de mayor valor admite hasta 10: value=100 con [D,U] → D=10', () => {
+    const { container, getByTestId } = render(
+      <Abacus
+        columns={[
+          { label: 'D', color: '#10B981' },
+          { label: 'U', color: '#EF4444' },
+        ]}
+        value={100}
+        onChange={() => {}}
+      />,
+    );
+    const rs = sliders(container);
+    expect(rs[0]!.getAttribute('aria-valuenow')).toBe('10');
+    expect(rs[1]!.getAttribute('aria-valuenow')).toBe('0');
+    expect(getByTestId('abacus-number')).toHaveTextContent('100');
+  });
+
+  it('BUG-04 el acarreo de columnas inferiores no cambia: [D,U] value=20 → D=2, U=0', () => {
+    const { container } = render(
+      <Abacus
+        columns={[
+          { label: 'D', color: '#10B981' },
+          { label: 'U', color: '#EF4444' },
+        ]}
+        value={20}
+        onChange={() => {}}
+      />,
+    );
+    const rs = sliders(container);
+    expect(rs[0]!.getAttribute('aria-valuenow')).toBe('2');
+    expect(rs[1]!.getAttribute('aria-valuenow')).toBe('0');
+  });
+
   it('mover cuenta en decenas: onChange recibe el número actualizado', () => {
     const onChange = vi.fn();
     const { container } = render(<Abacus columns={CDU} value={347} onChange={onChange} />);

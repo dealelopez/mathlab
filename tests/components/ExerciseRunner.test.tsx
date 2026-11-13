@@ -466,6 +466,36 @@ describe('ExerciseRunner', () => {
     expect(container.querySelectorAll('[data-slot-id^="islot-"]')).toHaveLength(expectedRows);
   });
 
+  it('BUG-04 identify + ábaco (nivel 2): el ábaco muestra siempre el valor del ejercicio', () => {
+    // Nivel 2: una columna [U] y rango 1-10. Con el valor 10 el ábaco se veía vacío.
+    // Se fuerza el valor 10 sobre varias generaciones para no depender del azar.
+    const generate = vi.spyOn(ExerciseEngine.prototype, 'generate');
+    try {
+      for (let i = 0; i < 40; i++) {
+        const { getByTestId, unmount } = render(
+          <ExerciseRunner exerciseType="identify" difficulty={2} manipulative="abacus" />,
+        );
+        const exercise = generate.mock.results[generate.mock.results.length - 1]!.value as {
+          correctAnswer: number;
+        };
+        expect(getByTestId('abacus-number')).toHaveTextContent(String(exercise.correctAnswer));
+        unmount();
+      }
+    } finally {
+      generate.mockRestore();
+    }
+  });
+
+  it('BUG-04 represent + ábaco (nivel 2): llenar las 10 cuentas representa el 10', () => {
+    const { container, getByTestId } = render(
+      <ExerciseRunner exerciseType="represent" difficulty={2} manipulative="abacus" />,
+    );
+    const circles = container.querySelectorAll('[role="slider"] circle');
+    fireEvent.click(circles[9]!);
+    expect(getByTestId('abacus-number')).toHaveTextContent('10');
+    expect(container.querySelector('[role="slider"]')!.getAttribute('aria-valuenow')).toBe('10');
+  });
+
   it('identify + ábaco: número fijo visible y entrada por dígitos', () => {
     const { container, getByTestId } = render(
       <ExerciseRunner exerciseType="identify" difficulty={2} manipulative="abacus" />,

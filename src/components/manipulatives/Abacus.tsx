@@ -1,5 +1,18 @@
 import BeadRow from '../primitives/BeadRow';
-import { numberToDigits, digitsToNumber } from '../../lib/math';
+import { digitsToNumber } from '../../lib/math';
+
+/**
+ * Dígito de cada columna (de mayor a menor valor posicional).
+ * Las columnas inferiores llevan 0-9 (el exceso acarrea a la siguiente). La columna
+ * de mayor valor no tiene a dónde acarrear, así que admite hasta 10 cuentas: con una
+ * sola columna [U], el 10 se ve como las 10 cuentas activas en vez de un 0 vacío.
+ */
+function columnDigits(value: number, count: number): number[] {
+  return Array.from({ length: count }, (_, i) => {
+    const quotient = Math.floor(value / 10 ** (count - 1 - i));
+    return i === 0 ? Math.min(10, quotient) : quotient % 10;
+  });
+}
 
 export interface AbacusColumn {
   /** Etiqueta del lugar: 'U', 'D', 'C' */
@@ -43,11 +56,7 @@ export default function Abacus({
   highlightColumn = -1,
 }: AbacusProps) {
   const safeValue = Math.max(0, Math.round(value));
-  const raw = numberToDigits(safeValue);
-  const digits =
-    raw.length >= columns.length
-      ? raw.slice(raw.length - columns.length)
-      : [...Array<number>(columns.length - raw.length).fill(0), ...raw];
+  const digits = columnDigits(safeValue, columns.length);
 
   const handleDigitChange = (colIndex: number, newDigit: number) => {
     if (readOnly) return;

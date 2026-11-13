@@ -6,7 +6,9 @@ import type { DifficultyLevel } from '../../src/types';
 describe('ExerciseEngine', () => {
   it('genera ejercicios de cada tipo sin errores', () => {
     const engine = new ExerciseEngine();
-    for (const type of ['represent', 'identify', 'decompose', 'series', 'placement'] as const) {
+    for (const type of [
+      'represent', 'identify', 'decompose', 'series', 'placement', 'add', 'subtract',
+    ] as const) {
       const ex = engine.generate(type, 2);
       expect(ex.type).toBe(type);
       expect(ex.id).toBeTruthy();

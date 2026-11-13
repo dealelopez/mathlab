@@ -5,11 +5,13 @@ import { generateIdentify } from './generators/identify';
 import { generateDecompose } from './generators/decompose';
 import { generateSeries } from './generators/series';
 import { generatePlacement } from './generators/placement';
+import { generateAdd, generateSubtract } from './generators/operation';
 import { validateRepresent } from './validators/represent';
 import { validateIdentify } from './validators/identify';
 import { validateDecompose } from './validators/decompose';
 import { validateSeries } from './validators/series';
 import { validatePlacement } from './validators/placement';
+import { validateOperation } from './validators/operation';
 
 const GENERATORS: Record<
   ExerciseType,
@@ -20,6 +22,8 @@ const GENERATORS: Record<
   decompose: generateDecompose,
   series: generateSeries,
   placement: generatePlacement,
+  add: generateAdd,
+  subtract: generateSubtract,
 };
 
 const VALIDATORS: Record<ExerciseType, (exercise: Exercise, answer: Answer) => ValidationResult> = {
@@ -28,6 +32,8 @@ const VALIDATORS: Record<ExerciseType, (exercise: Exercise, answer: Answer) => V
   decompose: validateDecompose,
   series: validateSeries,
   placement: validatePlacement,
+  add: validateOperation,
+  subtract: validateOperation,
 };
 
 /**

@@ -80,6 +80,15 @@ export interface ExerciseSetup {
 
   /** Valor prerellenado en una de las partes (dificultad fácil) */
   prefilledValue?: number | null;
+
+  /** Operación: los dos números en orden (T23: sumandos o minuendo-sustraendo) */
+  operands?: [number, number];
+
+  /** Tamaños de salto que ofrece la vista de saltos (T23) */
+  jumpSizes?: number[];
+
+  /** Separación de las marcas de la recta numérica (T23) */
+  numberLineStep?: number;
 }
 
 /**

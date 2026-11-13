@@ -16,6 +16,8 @@ export const EXERCISE_LABELS: Record<ExerciseType, string> = {
   decompose: 'Descomposición',
   series: 'Series',
   placement: 'Colocar en la recta',
+  add: 'Sumas',
+  subtract: 'Restas',
 };
 
 /** Ejercicios que ofrece cada manipulativo en su página de actividades. */

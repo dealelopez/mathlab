@@ -191,6 +191,78 @@ export const DIFFICULTY_MAP: Record<ExerciseType, Record<DifficultyLevel, Diffic
       seriesPatterns: [],
     },
   },
+
+  /**
+   * T23: sumas y restas con saltos sobre la recta. Las dos operaciones comparten
+   * configuración. `numberRange` es el rango del RESULTADO en sumas y del
+   * MINUENDO en restas. Sin validManipulatives: siempre recta numérica.
+   * El nivel 5 es la «recta vacía» (sin números rotulados).
+   */
+  add: {
+    1: {
+      numberRange: [2, 10],
+      manipulativeConfig: {},
+      distractorCount: 0, hiddenCount: 0, tolerance: 0, decomposeParts: 2,
+      seriesPatterns: [],
+    },
+    2: {
+      numberRange: [2, 20],
+      manipulativeConfig: {},
+      distractorCount: 0, hiddenCount: 0, tolerance: 0, decomposeParts: 2,
+      seriesPatterns: [],
+    },
+    3: {
+      numberRange: [21, 100],
+      manipulativeConfig: {},
+      distractorCount: 0, hiddenCount: 0, tolerance: 0, decomposeParts: 2,
+      seriesPatterns: [],
+    },
+    4: {
+      numberRange: [101, 200],
+      manipulativeConfig: {},
+      distractorCount: 0, hiddenCount: 0, tolerance: 0, decomposeParts: 2,
+      seriesPatterns: [],
+    },
+    5: {
+      numberRange: [101, 300],
+      manipulativeConfig: {},
+      distractorCount: 0, hiddenCount: 0, tolerance: 0, decomposeParts: 2,
+      seriesPatterns: [],
+    },
+  },
+
+  subtract: {
+    1: {
+      numberRange: [2, 10],
+      manipulativeConfig: {},
+      distractorCount: 0, hiddenCount: 0, tolerance: 0, decomposeParts: 2,
+      seriesPatterns: [],
+    },
+    2: {
+      numberRange: [2, 20],
+      manipulativeConfig: {},
+      distractorCount: 0, hiddenCount: 0, tolerance: 0, decomposeParts: 2,
+      seriesPatterns: [],
+    },
+    3: {
+      numberRange: [21, 100],
+      manipulativeConfig: {},
+      distractorCount: 0, hiddenCount: 0, tolerance: 0, decomposeParts: 2,
+      seriesPatterns: [],
+    },
+    4: {
+      numberRange: [101, 200],
+      manipulativeConfig: {},
+      distractorCount: 0, hiddenCount: 0, tolerance: 0, decomposeParts: 2,
+      seriesPatterns: [],
+    },
+    5: {
+      numberRange: [101, 300],
+      manipulativeConfig: {},
+      distractorCount: 0, hiddenCount: 0, tolerance: 0, decomposeParts: 2,
+      seriesPatterns: [],
+    },
+  },
 };
 
 /**

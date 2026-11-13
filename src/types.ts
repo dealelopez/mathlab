@@ -2,7 +2,9 @@
 export type Manipulative = 'rekenrek' | 'abacus' | 'tenframe' | 'numberline';
 
 /** Tipos de ejercicio */
-export type ExerciseType = 'represent' | 'identify' | 'decompose' | 'series' | 'placement';
+export type ExerciseType =
+  | 'represent' | 'identify' | 'decompose' | 'series' | 'placement'
+  | 'add' | 'subtract';
 
 /** Niveles de dificultad: 1 (más fácil) a 5 (más difícil) */
 export type DifficultyLevel = 1 | 2 | 3 | 4 | 5;

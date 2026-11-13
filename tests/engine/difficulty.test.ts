@@ -5,7 +5,9 @@ import {
   getDifficultyConfig,
 } from '../../src/engine/difficulty';
 
-const EXERCISE_TYPES = ['represent', 'identify', 'decompose', 'series', 'placement'] as const;
+const EXERCISE_TYPES = [
+  'represent', 'identify', 'decompose', 'series', 'placement', 'add', 'subtract',
+] as const;
 const DIFFICULTY_LEVELS = [1, 2, 3, 4, 5] as const;
 
 describe('DIFFICULTY_MAP', () => {

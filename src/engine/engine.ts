@@ -30,8 +30,14 @@ const VALIDATORS: Record<ExerciseType, (exercise: Exercise, answer: Answer) => V
   placement: validatePlacement,
 };
 
-/** Intentos de regeneración antes de aceptar un duplicado. */
-const MAX_ATTEMPTS = 10;
+/**
+ * Candidatos que se generan como máximo en cada llamada. Con pocas combinaciones posibles
+ * (p. ej. representar con números 1-5) hacen falta bastantes para encontrar la que aún no
+ * ha salido. Las combinaciones no son equiprobables (en descomposición nivel 1 alguna sale
+ * un 6 % de las veces), así que se generan 300: la probabilidad de no hallar la que falta
+ * es del orden de 0,94^300 (menos de una entre cien millones).
+ */
+const MAX_ATTEMPTS = 300;
 
 /**
  * ExerciseEngine — genera ejercicios sin repetir los recientes
@@ -49,8 +55,13 @@ export class ExerciseEngine {
   }
 
   /**
-   * Genera un ejercicio aleatorio. Si su deduplicationKey está en el
-   * historial reciente, regenera (máx. 10 intentos).
+   * Genera un ejercicio aleatorio sin repetir los recientes (por deduplicationKey).
+   *
+   * - Si algún candidato no está en el historial, se devuelve el primero que no esté.
+   * - Si todos los candidatos ya salieron (hay menos combinaciones que ejercicios), se
+   *   devuelve el que salió **hace más tiempo**. Así se agotan todas las combinaciones
+   *   antes de repetir y nunca sale el mismo ejercicio dos veces seguidas (salvo que solo
+   *   exista una combinación posible).
    */
   generate(
     type: ExerciseType,
@@ -59,10 +70,23 @@ export class ExerciseEngine {
     answerMode?: AnswerMode,
   ): Exercise {
     const generator = GENERATORS[type];
-    let exercise = generator(difficulty, manipulative, answerMode);
-    for (let i = 0; i < MAX_ATTEMPTS && this.history.includes(exercise.deduplicationKey); i++) {
-      exercise = generator(difficulty, manipulative, answerMode);
+    let chosen: Exercise | null = null;
+    let chosenLastSeen = Infinity;
+    for (let i = 0; i < MAX_ATTEMPTS; i++) {
+      const candidate = generator(difficulty, manipulative, answerMode);
+      // Índice de la última vez que salió (-1 = no está en el historial).
+      const lastSeen = this.history.lastIndexOf(candidate.deduplicationKey);
+      if (lastSeen === -1) {
+        chosen = candidate;
+        break;
+      }
+      // Menor índice = salió hace más tiempo.
+      if (lastSeen < chosenLastSeen) {
+        chosen = candidate;
+        chosenLastSeen = lastSeen;
+      }
     }
+    const exercise = chosen!;
     this.history.push(exercise.deduplicationKey);
     if (this.history.length > this.maxHistory) {
       this.history = this.history.slice(-this.maxHistory);

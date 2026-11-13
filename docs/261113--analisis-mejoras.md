@@ -34,6 +34,7 @@ BUG-04 (ver las secciones correspondientes). El resto sigue pendiente.
 | [BUG-03](#bug-03--exerciserunner-genera-un-ejercicio-de-más-al-montar) | ExerciseRunner genera un ejercicio de más al montar | Bug | P1 | S | ✅ |
 | [BUG-04](#bug-04--el-ábaco-de-una-columna-no-puede-mostrar-el-10) | El ábaco de una columna no puede mostrar el 10 | Bug | P1 | S | ✅ |
 | [BUG-05](#bug-05--identify-mostraba-la-respuesta-escrita) | Identify mostraba la respuesta escrita | Bug | P1 | S | ✅ |
+| [BUG-06](#bug-06--el-motor-repetía-ejercicios-seguidos) | El motor repetía ejercicios seguidos con pocas combinaciones | Bug | P1 | S | ✅ |
 | [PROD-01](#prod-01--home-y-navegación-tarea-15) | Home y navegación (tarea 15) | Producto | P1 | L | ✅ |
 | [TENFRAME-01](#tenframe-01--interacción-de-rellenado) | Rellenado del TenFrame hasta la celda | UX | P1 | S | ⬜ |
 | [PROD-02](#prod-02--resumen-de-sesión-y-progreso) | Resumen de sesión y resultados | Producto | P2 | M | ⬜ |
@@ -139,6 +140,39 @@ no se muestra.
 
 **Revisado y sin cambios:** los mensajes tras fallar (`Colócalo sobre el N`, `no N`) repiten
 el número que ya está en la instrucción, y las pistas no desvelan el resultado.
+
+### BUG-06 — El motor repetía ejercicios seguidos
+
+**Dónde:** `src/engine/engine.ts`, `ExerciseEngine.generate`.
+
+**Detectado** el 2026-11-13 al preguntar el usuario si los ejercicios son aleatorios y no se
+repiten. Se simularon 2.000 sesiones de 10 ejercicios por cada tipo, nivel y manipulativo.
+
+**Problema:** `generate` probaba 10 veces a evitar los 20 últimos ejercicios y, si no lo
+conseguía, **aceptaba uno cualquiera, también el que acababa de salir**. Con espacios
+pequeños fallaba mucho: representar o identificar nivel 1 (5 ejercicios posibles) repetía
+el mismo ejercicio seguido en el **67 %** de las sesiones; nivel 2 (10 posibles), en el
+4-5 %; descomposición nivel 1 (10 posibles), en el 6 %. Con 20 o más combinaciones casi no
+había repeticiones.
+
+**Resuelto:** se generan hasta 300 candidatos; se devuelve el primero que no esté en el
+historial y, si todos ya salieron, **el que salió hace más tiempo**. Así se agotan todas las
+combinaciones antes de repetir y nunca sale el mismo ejercicio dos veces seguidas. Tests en
+`tests/engine/engine.test.ts`.
+
+**Límite que no se puede arreglar con código:** en los niveles con menos combinaciones que
+ejercicios por sesión (10), repetir es inevitable. Nivel 1 de representar/identificar
+(5), series (6) y colocar en la recta (6): cada ejercicio sale como mucho 2 veces y nunca
+seguido. Si se quiere evitar del todo, hay que ampliar el rango de esos niveles o acortar
+la sesión.
+
+**No cubierto:** cada sesión tiene su propio motor. Al pulsar «Repetir», el historial
+empieza vacío y el primer ejercicio puede coincidir con el último de la sesión anterior.
+
+**Test intermitente relacionado** (no era del motor): `decompose drag: instrucción, opciones
+y flujo correcto` fallaba ~2 % de las veces con el motor original. Con partes iguales
+(3 + 3) el test buscaba el segundo chip por valor y encontraba el primero, ya usado.
+Corregido excluyendo el chip colocado; 200 repeticiones sin fallo.
 
 ---
 

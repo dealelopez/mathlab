@@ -24,6 +24,40 @@ describe('ExerciseEngine', () => {
     expect(keys.size).toBe(50);
   });
 
+  it('BUG-06 nunca repite el mismo ejercicio dos veces seguidas, aunque solo haya 5 posibles', () => {
+    // represent nivel 1 con rekenrek: 5 ejercicios posibles (números 1-5)
+    for (let session = 0; session < 50; session++) {
+      const engine = new ExerciseEngine();
+      let previous = '';
+      for (let i = 0; i < 40; i++) {
+        const key = engine.generate('represent', 1, 'rekenrek').deduplicationKey;
+        expect(key).not.toBe(previous);
+        previous = key;
+      }
+    }
+  });
+
+  it('BUG-06 agota todas las combinaciones antes de repetir (ciclo completo)', () => {
+    // 5 ejercicios posibles: cualquier ventana de 5 seguidos debe tener los 5 distintos
+    const engine = new ExerciseEngine();
+    const keys: string[] = [];
+    for (let i = 0; i < 30; i++) {
+      keys.push(engine.generate('represent', 1, 'rekenrek').deduplicationKey);
+    }
+    for (let i = 0; i + 5 <= keys.length; i++) {
+      expect(new Set(keys.slice(i, i + 5)).size).toBe(5);
+    }
+  });
+
+  it('BUG-06 con pocas combinaciones, cuando hay que repetir elige la que salió hace más tiempo', () => {
+    // decompose nivel 1: 10 ejercicios posibles; en 10 seguidos no debe haber repetidos
+    for (let session = 0; session < 30; session++) {
+      const engine = new ExerciseEngine();
+      const keys = Array.from({ length: 10 }, () => engine.generate('decompose', 1).deduplicationKey);
+      expect(new Set(keys).size).toBe(10);
+    }
+  });
+
   it('reset() limpia el historial', () => {
     const engine = new ExerciseEngine();
     engine.generate('represent', 1);

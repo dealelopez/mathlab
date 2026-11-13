@@ -48,6 +48,9 @@ Un commit por ID, con test de regresión.
 - [x] BUG-04 El ábaco de una columna dibujaba el 10 como 0 (hallado al estabilizar un
   test intermitente)
 - [x] BUG-05 Identify mostraba la respuesta escrita (Total, número o valor del manipulativo)
+- [x] BUG-06 El motor repetía el mismo ejercicio seguido en niveles con pocas combinaciones
+  (hasta el 67 % de las sesiones del nivel 1). Hallado además un test intermitente de
+  decompose (~2 %) causado por chips con el mismo valor.
 
 ## Siguientes tareas (listas para ejecutar)
 

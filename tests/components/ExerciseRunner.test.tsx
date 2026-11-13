@@ -577,15 +577,16 @@ describe('ExerciseRunner', () => {
       }
     }
     expect(a).toBeGreaterThanOrEqual(0);
+    const first = chips[a]!;
     dragChipToSlot(
       container,
-      chips[a]!,
+      first,
       container.querySelector('[data-slot-id="dslot-0"]')! as HTMLElement,
     );
     chips = chipValues(container);
-    const second = chips.find(
-      (c) => Number(c.textContent) === vals[b] && c.textContent !== null,
-    )!;
+    // Excluir el chip ya colocado: con partes iguales (3 + 3) hay dos chips con el mismo
+    // valor y `find` devolvía el primero, que ya estaba usado (fallaba ~2 % de las veces).
+    const second = chips.find((c) => c !== first && Number(c.textContent) === vals[b])!;
     dragChipToSlot(
       container,
       second,

@@ -116,6 +116,12 @@ Cada una nació de un error real:
   `tests/components/ExerciseRunner.test.tsx`) o espía el motor:
   `vi.spyOn(ExerciseEngine.prototype, 'generate')` y lee el último
   `mock.results[...].value.correctAnswer`. Acuérdate de `mockRestore()`.
+- **Chips con el mismo valor:** las opciones pueden repetir valor (partes `3 + 3`) y los chips
+  usados siguen en el DOM como fantasma. Al elegir un chip por valor en un test, excluye el
+  que ya has colocado (`c !== first`); si no, el test falla de forma intermitente (~2 %).
+- **Antirrepetición:** `ExerciseEngine` elige el candidato nuevo y, si todos ya salieron, el que
+  salió hace más tiempo. Con menos combinaciones que ejercicios por sesión repetir es
+  inevitable (nivel 1 de varios tipos); no es un bug.
 - **Arrastrar en tests:** copia el helper `dragChipToSlot` de
   `ExerciseRunner.test.tsx` (pointerDown, pointerMove, `elementFromPoint` simulado,
   pointerUp).

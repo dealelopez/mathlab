@@ -4,6 +4,21 @@ import ExerciseRunner from '../../src/components/activities/ExerciseRunner';
 import { ExerciseEngine } from '../../src/engine/engine';
 import type { Exercise } from '../../src/engine/types';
 
+/**
+ * Renderiza y captura el ejercicio generado. En identify la respuesta NO se muestra en
+ * pantalla, así que los tests la leen del ejercicio y no del DOM.
+ */
+function renderCapturing(ui: React.ReactElement) {
+  const generate = vi.spyOn(ExerciseEngine.prototype, 'generate');
+  try {
+    const utils = render(ui);
+    const exercise = generate.mock.results[generate.mock.results.length - 1]!.value as Exercise;
+    return { ...utils, exercise, shown: exercise.correctAnswer as number };
+  } finally {
+    generate.mockRestore();
+  }
+}
+
 function checkBtn(container: HTMLElement): HTMLButtonElement {
   return Array.from(container.querySelectorAll('button')).find(
     (b) => b.textContent === 'Comprobar',
@@ -269,17 +284,50 @@ describe('ExerciseRunner', () => {
   });
 
   it('identify + rekenrek: readOnly con valor fijo y entrada por dígitos', () => {
-    const { container, getByTestId } = render(
+    const { container, shown } = renderCapturing(
       <ExerciseRunner exerciseType="identify" difficulty={1} manipulative="rekenrek" />,
     );
-    const shown = Number(getByTestId('rekenrek-total').textContent!.match(/Total: (\d+)/)![1]);
+    const sliderTotal = () =>
+      Array.from(container.querySelectorAll('[role="slider"]')).reduce(
+        (acc, el) => acc + Number(el.getAttribute('aria-valuenow')),
+        0,
+      );
+    expect(sliderTotal()).toBe(shown);
     // readOnly: click no cambia el valor
     fireEvent.click(container.querySelectorAll('[role="slider"] circle')[0]!);
-    expect(getByTestId('rekenrek-total')).toHaveTextContent(`Total: ${shown}`);
+    expect(sliderTotal()).toBe(shown);
     // Un hueco por cifra (1-5 → 1 hueco) + teclado 0-9 del mismo componente que decompose
     expect(container.querySelectorAll('[data-slot-id^="islot-"]')).toHaveLength(1);
     expect(container.querySelectorAll('[data-testid="answer-chip"]')).toHaveLength(10);
     expect(container.textContent).toContain('Tu respuesta:');
+  });
+
+  it('identify NO muestra la respuesta escrita (ni total, ni número, ni valor)', () => {
+    for (const manipulative of ['rekenrek', 'abacus', 'tenframe'] as const) {
+      const { queryByTestId, unmount } = render(
+        <ExerciseRunner exerciseType="identify" difficulty={2} manipulative={manipulative} />,
+      );
+      expect(queryByTestId('rekenrek-total')).not.toBeInTheDocument();
+      expect(queryByTestId('abacus-number')).not.toBeInTheDocument();
+      expect(queryByTestId('tenframe-value')).not.toBeInTheDocument();
+      unmount();
+    }
+  });
+
+  it('identify + recta: el marcador no lleva el número escrito', () => {
+    const { container } = render(
+      <ExerciseRunner exerciseType="identify" difficulty={2} manipulative="numberline" />,
+    );
+    const marker = container.querySelector('[data-testid="numberline-marker"]')!;
+    expect(marker.querySelector('text')).toBeNull();
+  });
+
+  it('represent sigue mostrando el valor que va construyendo el niño', () => {
+    const { container, getByTestId } = render(
+      <ExerciseRunner exerciseType="represent" difficulty={1} manipulative="rekenrek" />,
+    );
+    fireEvent.click(container.querySelectorAll('[role="slider"] circle')[1]!);
+    expect(getByTestId('rekenrek-total')).toHaveTextContent('Total: 2');
   });
 
   function fillIdentify(container: HTMLElement, value: number) {
@@ -298,19 +346,19 @@ describe('ExerciseRunner', () => {
   }
 
   it('identify + rekenrek: respuesta correcta → feedback correct', () => {
-    const { container, getByTestId } = render(
+    const { container, shown } = renderCapturing(
       <ExerciseRunner exerciseType="identify" difficulty={1} manipulative="rekenrek" />,
     );
-    const shown = Number(getByTestId('rekenrek-total').textContent!.match(/Total: (\d+)/)![1]);
+    
     answerIdentify(container, shown);
     expect(correctBanner(container)).toBeInTheDocument();
   });
 
   it('identify + rekenrek: respuesta incorrecta → feedback incorrect', () => {
-    const { container, getByTestId } = render(
+    const { container, shown } = renderCapturing(
       <ExerciseRunner exerciseType="identify" difficulty={1} manipulative="rekenrek" />,
     );
-    const shown = Number(getByTestId('rekenrek-total').textContent!.match(/Total: (\d+)/)![1]);
+    
     answerIdentify(container, shown + 1);
     expect(incorrectBanner(container)).toBeInTheDocument();
   });
@@ -352,10 +400,10 @@ describe('ExerciseRunner', () => {
   });
 
   it('BUG-01 identify: tras avisar, una respuesta válida se valida con normalidad', () => {
-    const { container, getByTestId } = render(
+    const { container, shown } = renderCapturing(
       <ExerciseRunner exerciseType="identify" difficulty={1} manipulative="rekenrek" />,
     );
-    const shown = Number(getByTestId('rekenrek-total').textContent!.match(/Total: (\d+)/)![1]);
+    
     fireEvent.click(checkBtn(container));
     fillIdentify(container, shown);
     fireEvent.click(checkBtn(container));
@@ -363,10 +411,10 @@ describe('ExerciseRunner', () => {
   });
 
   it('identify: tocar un hueco lleno lo vacía (sin 0 atascado)', () => {
-    const { container, getByTestId } = render(
+    const { container, shown } = renderCapturing(
       <ExerciseRunner exerciseType="identify" difficulty={1} manipulative="rekenrek" />,
     );
-    const shown = Number(getByTestId('rekenrek-total').textContent!.match(/Total: (\d+)/)![1]);
+    
     const wrong = shown + 1; // rango 1-5: wrong es una cifra distinta
     fillIdentify(container, wrong);
     fireEvent.click(checkBtn(container));
@@ -386,12 +434,10 @@ describe('ExerciseRunner', () => {
   });
 
   it('identify free multicifra: un hueco por cifra compone el número', () => {
-    const { container, getByTestId } = render(
+    const { container, shown } = renderCapturing(
       <ExerciseRunner exerciseType="identify" difficulty={3} manipulative="rekenrek" />,
     );
-    const shown = Number(
-      getByTestId('rekenrek-total').textContent!.match(/Total: (\d+)/)![1],
-    );
+    
     const digits = String(shown).split('');
     expect(container.querySelectorAll('[data-slot-id^="islot-"]')).toHaveLength(digits.length);
     answerIdentify(container, shown);
@@ -399,7 +445,7 @@ describe('ExerciseRunner', () => {
   });
 
   it('identify con opciones: chips con números completos y flujo drag correcto', () => {
-    const { container, getByTestId } = render(
+    const { container, shown } = renderCapturing(
       <ExerciseRunner
         exerciseType="identify"
         difficulty={2}
@@ -407,9 +453,7 @@ describe('ExerciseRunner', () => {
         answerMode="drag"
       />,
     );
-    const shown = Number(
-      getByTestId('rekenrek-total').textContent!.match(/Total: (\d+)/)![1],
-    );
+    
     // Hay varios chips con números completos, uno es el correcto
     const chips = Array.from(container.querySelectorAll('[data-testid="answer-chip"]'));
     expect(chips.length).toBeGreaterThan(1);
@@ -431,7 +475,7 @@ describe('ExerciseRunner', () => {
   });
 
   it('identify con opciones: chip incorrecto → feedback incorrect', () => {
-    const { container, getByTestId } = render(
+    const { container, shown } = renderCapturing(
       <ExerciseRunner
         exerciseType="identify"
         difficulty={2}
@@ -439,9 +483,7 @@ describe('ExerciseRunner', () => {
         answerMode="drag"
       />,
     );
-    const shown = Number(
-      getByTestId('rekenrek-total').textContent!.match(/Total: (\d+)/)![1],
-    );
+    
     const chips = Array.from(container.querySelectorAll('[data-testid="answer-chip"]'));
     const wrong = chips.find((c) => c.textContent !== String(shown))! as HTMLElement;
     const slot = container.querySelector('[data-slot-id="islot-0"]')! as HTMLElement;
@@ -459,31 +501,25 @@ describe('ExerciseRunner', () => {
   });
 
   it('identify: tantos huecos como cifras del valor mostrado', () => {
-    const { container, getByTestId } = render(
+    const { container, shown } = renderCapturing(
       <ExerciseRunner exerciseType="identify" difficulty={2} manipulative="abacus" />,
     );
-    const shown = Number(getByTestId('abacus-number').textContent);
-    const expectedRows = String(shown).length;
-    expect(container.querySelectorAll('[data-slot-id^="islot-"]')).toHaveLength(expectedRows);
+    expect(container.querySelectorAll('[data-slot-id^="islot-"]')).toHaveLength(
+      String(shown).length,
+    );
   });
 
-  it('BUG-04 identify + ábaco (nivel 2): el ábaco muestra siempre el valor del ejercicio', () => {
+  it('BUG-04 identify + ábaco (nivel 2): las cuentas muestran siempre el valor del ejercicio', () => {
     // Nivel 2: una columna [U] y rango 1-10. Con el valor 10 el ábaco se veía vacío.
-    // Se fuerza el valor 10 sobre varias generaciones para no depender del azar.
-    const generate = vi.spyOn(ExerciseEngine.prototype, 'generate');
-    try {
-      for (let i = 0; i < 40; i++) {
-        const { getByTestId, unmount } = render(
-          <ExerciseRunner exerciseType="identify" difficulty={2} manipulative="abacus" />,
-        );
-        const exercise = generate.mock.results[generate.mock.results.length - 1]!.value as {
-          correctAnswer: number;
-        };
-        expect(getByTestId('abacus-number')).toHaveTextContent(String(exercise.correctAnswer));
-        unmount();
-      }
-    } finally {
-      generate.mockRestore();
+    // Se repite sobre varias generaciones para no depender del azar.
+    for (let i = 0; i < 40; i++) {
+      const { container, shown, unmount } = renderCapturing(
+        <ExerciseRunner exerciseType="identify" difficulty={2} manipulative="abacus" />,
+      );
+      expect(container.querySelector('[role="slider"]')!.getAttribute('aria-valuenow')).toBe(
+        String(shown),
+      );
+      unmount();
     }
   });
 
@@ -497,11 +533,11 @@ describe('ExerciseRunner', () => {
     expect(container.querySelector('[role="slider"]')!.getAttribute('aria-valuenow')).toBe('10');
   });
 
-  it('identify + ábaco: número fijo visible y entrada por dígitos', () => {
-    const { container, getByTestId } = render(
+  it('identify + ábaco: valor solo en las cuentas y entrada por dígitos', () => {
+    const { container, queryByTestId } = render(
       <ExerciseRunner exerciseType="identify" difficulty={2} manipulative="abacus" />,
     );
-    expect(getByTestId('abacus-number')).toBeInTheDocument();
+    expect(queryByTestId('abacus-number')).not.toBeInTheDocument();
     expect(container.querySelectorAll('[data-slot-id^="islot-"]').length).toBeGreaterThan(0);
     expect(container.querySelectorAll('[data-testid="answer-chip"]')).toHaveLength(10);
     expect(container.querySelectorAll('[role="slider"]')).toHaveLength(1);

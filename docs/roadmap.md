@@ -44,6 +44,7 @@ Un commit por ID, con test de regresión.
 - [x] BUG-03 `ExerciseRunner` genera un ejercicio de más al montar
 - [x] BUG-04 El ábaco de una columna dibujaba el 10 como 0 (hallado al estabilizar un
   test intermitente)
+- [x] BUG-05 Identify mostraba la respuesta escrita (Total, número o valor del manipulativo)
 
 ## Fase 3 — Mejoras de producto
 

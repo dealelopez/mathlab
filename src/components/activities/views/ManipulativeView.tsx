@@ -26,6 +26,10 @@ export default function ManipulativeView({
   const readOnly = exercise.setup.readOnly ?? false;
   const [val, setVal] = useState<number>(exercise.setup.initialValue ?? 0);
   const manipulative = exercise.setup.manipulative ?? exercise.manipulative;
+  // En identify el valor mostrado ES la respuesta: el niño debe contarlo en las cuentas,
+  // fichas o marcas, así que no se escribe el número (total, cifras ni valor).
+  // En represent sí se muestra el valor que el niño va construyendo.
+  const showValue = exercise.type !== 'identify';
 
   const commit = (v: number) => {
     setVal(v);
@@ -39,6 +43,7 @@ export default function ManipulativeView({
         value={val}
         onChange={(_values, total) => commit(total)}
         readOnly={readOnly}
+        showTotal={showValue}
       />
     );
   }
@@ -49,6 +54,7 @@ export default function ManipulativeView({
         value={val}
         onChange={commit}
         readOnly={readOnly}
+        showNumber={showValue}
       />
     );
   }
@@ -59,6 +65,7 @@ export default function ManipulativeView({
         value={val}
         onChange={commit}
         readOnly={readOnly}
+        showValue={showValue}
       />
     );
   }

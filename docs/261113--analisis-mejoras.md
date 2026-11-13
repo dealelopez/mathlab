@@ -30,6 +30,7 @@ BUG-04 (ver las secciones correspondientes). El resto sigue pendiente.
 | [BUG-02](#bug-02--la-recta-permite-recolocar-tras-acertar-placement) | La recta permite recolocar tras acertar | Bug | P1 | S | ✅ |
 | [BUG-03](#bug-03--exerciserunner-genera-un-ejercicio-de-más-al-montar) | ExerciseRunner genera un ejercicio de más al montar | Bug | P1 | S | ✅ |
 | [BUG-04](#bug-04--el-ábaco-de-una-columna-no-puede-mostrar-el-10) | El ábaco de una columna no puede mostrar el 10 | Bug | P1 | S | ✅ |
+| [BUG-05](#bug-05--identify-mostraba-la-respuesta-escrita) | Identify mostraba la respuesta escrita | Bug | P1 | S | ✅ |
 | [PROD-01](#prod-01--home-y-navegación-tarea-15) | Home y navegación (tarea 15) | Producto | P1 | L | ✅ |
 | [TENFRAME-01](#tenframe-01--interacción-de-rellenado) | Rellenado del TenFrame hasta la celda | UX | P1 | S | ⬜ |
 | [PROD-02](#prod-02--resumen-de-sesión-y-progreso) | Resumen de sesión y resultados | Producto | P2 | M | ⬜ |
@@ -117,6 +118,24 @@ refactor posterior.
 **Problema:** `Abacus` recortaba el valor a tantos dígitos como columnas. En los niveles 1-2 el ábaco tiene solo la columna U y el rango llega a 10, así que el 10 se dibujaba como `0` sin cuentas. En `identify` el niño veía un ábaco vacío con respuesta correcta 10; en `represent`, al llenar las 10 cuentas el ábaco volvía a 0. Afectaba a 1 de cada 10 ejercicios de nivel 2 con ábaco.
 
 **Resuelto** en `4bdc008`: la columna de mayor valor admite hasta 10 cuentas (no tiene dónde acarrear). Las inferiores siguen en 0-9 con acarreo. Tests de regresión en `Abacus.test.tsx` y `ExerciseRunner.test.tsx`.
+
+### BUG-05 — Identify mostraba la respuesta escrita
+
+**Dónde:** `src/components/activities/views/ManipulativeView.tsx`.
+
+**Problema:** en `identify` ("¿Qué número muestra el rekenrek?") el manipulativo se
+dibujaba con el "Total: N" del rekenrek, el número del ábaco y el valor del marco de diez
+activos, así que la respuesta aparecía escrita en pantalla. Los propios tests la leían de
+ahí. Lo detectó el usuario al probar.
+
+**Resuelto:** `ManipulativeView` oculta total, número y valor cuando `exercise.type` es
+`identify`. En `represent` se mantienen, porque muestran lo que el niño está construyendo
+y el objetivo ya figura en la instrucción. Los tests de `identify` leen la respuesta del
+ejercicio generado (`renderCapturing`) en vez del DOM; hay tests nuevos que comprueban que
+no se muestra.
+
+**Revisado y sin cambios:** los mensajes tras fallar (`Colócalo sobre el N`, `no N`) repiten
+el número que ya está en la instrucción, y las pistas no desvelan el resultado.
 
 ---
 

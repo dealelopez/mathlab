@@ -138,6 +138,51 @@ describe('ExerciseRunner', () => {
     expect(markerPosition(container)).toBe(String(target));
   });
 
+  it('BUG-03 al montar se genera exactamente un ejercicio', () => {
+    const generate = vi.spyOn(ExerciseEngine.prototype, 'generate');
+    try {
+      render(<ExerciseRunner exerciseType="represent" difficulty={2} manipulative="rekenrek" />);
+      expect(generate).toHaveBeenCalledTimes(1);
+    } finally {
+      generate.mockRestore();
+    }
+  });
+
+  it('BUG-03 un rerender con la misma config no regenera; un cambio de config sí', () => {
+    const generate = vi.spyOn(ExerciseEngine.prototype, 'generate');
+    try {
+      const { rerender, getByTestId } = render(
+        <ExerciseRunner exerciseType="represent" difficulty={2} manipulative="rekenrek" />,
+      );
+      const first = getByTestId('activity-instruction').textContent;
+      rerender(<ExerciseRunner exerciseType="represent" difficulty={2} manipulative="rekenrek" />);
+      expect(generate).toHaveBeenCalledTimes(1);
+      expect(getByTestId('activity-instruction').textContent).toBe(first);
+
+      rerender(<ExerciseRunner exerciseType="represent" difficulty={3} manipulative="rekenrek" />);
+      expect(generate).toHaveBeenCalledTimes(2);
+      expect(getByTestId('activity-progress')).toHaveTextContent('1 / 10');
+    } finally {
+      generate.mockRestore();
+    }
+  });
+
+  it('BUG-03 cambiar de config reinicia la sesión (progreso y feedback)', () => {
+    const { container, rerender, getByTestId } = render(
+      <ExerciseRunner exerciseType="identify" difficulty={1} manipulative="rekenrek" />,
+    );
+    fireEvent.click(checkBtn(container));
+    fireEvent.click(
+      Array.from(container.querySelectorAll('button')).find((b) =>
+        b.textContent?.startsWith('Siguiente'),
+      )!,
+    );
+    expect(getByTestId('activity-progress')).toHaveTextContent('2 / 10');
+    rerender(<ExerciseRunner exerciseType="identify" difficulty={2} manipulative="rekenrek" />);
+    expect(getByTestId('activity-progress')).toHaveTextContent('1 / 10');
+    expect(container.querySelector('[data-testid="feedback-banner"]')).not.toBeInTheDocument();
+  });
+
   it('tras 2 ejercicios con exerciseCount=2, Siguiente llama onComplete', () => {
     const onComplete = vi.fn();
     const { container } = render(

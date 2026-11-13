@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useState } from 'react';
+import { Fragment, useEffect, useRef, useState } from 'react';
 import type {
   ExerciseType,
   DifficultyLevel,
@@ -497,8 +497,14 @@ export default function ExerciseRunner({
 
   const configKey = `${exerciseType}|${difficulty}|${manipulative ?? ''}|${answerMode ?? ''}`;
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+  // Reinicia la sesión solo cuando la configuración CAMBIA. El primer ejercicio ya
+  // se genera en el inicializador de useState, así que al montar no hay que hacer nada
+  // (antes se generaba un segundo ejercicio y el primero quedaba fuera del historial).
+  // Las dependencias son solo `configKey`: el resto de valores están contenidos en ella.
+  const lastConfigKey = useRef(configKey);
   useEffect(() => {
+    if (lastConfigKey.current === configKey) return;
+    lastConfigKey.current = configKey;
     engine.reset();
     setCurrent(engine.generate(exerciseType, difficulty, manipulative, answerMode));
     setIndex(0);

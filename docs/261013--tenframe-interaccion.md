@@ -1,7 +1,7 @@
-# Mejoras futuras (menores)
+# TENFRAME-01 — Interacción del TenFrame
 
-> El plan global de mejoras (con prioridades y orden) está en
-> [backlog-mejoras.md](backlog-mejoras.md). TENFRAME-01 figura allí también.
+> Detectado el 2026-10-13. Seguimiento en [`roadmap.md`](roadmap.md) y contexto en
+> [`261113--analisis-mejoras.md`](261113--analisis-mejoras.md#tenframe-01--interacción-de-rellenado).
 
 Lista de fricciones detectadas probando la app. No son bugs (el comportamiento
 actual es el especificado), sino UX a corregir más adelante.

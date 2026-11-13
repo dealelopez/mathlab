@@ -1,4 +1,6 @@
-# mathlab — Plan de Implementación
+# Arquitectura — mathlab
+
+> Última actualización: 2026-11-13. Estado de tareas y mejoras: [`roadmap.md`](roadmap.md).
 
 ## Proyecto
 
@@ -9,37 +11,6 @@
 | **Stack** | React 19 + Vite 6 + Tailwind 4 + TypeScript 5 |
 | **Tests** | Vitest 3 + React Testing Library + jsdom |
 | **Fecha de creación** | 2026-10-13 |
-
----
-
-## Tareas
-
-| # | Tarea | Documento | Estado |
-|---|-------|-----------|--------|
-| 0 | Contexto y requisitos | [00-contexto-y-requisitos.md](00-contexto-y-requisitos.md) | — |
-| 1 | Scaffolding, tipos base y sistema de dificultad | [task-01-scaffolding-tipos-dificultad.md](task-01-scaffolding-tipos-dificultad.md) | ⬜ |
-| 2 | usePointerDrag hook y primitiva Bead | [task-02-pointer-drag-bead.md](task-02-pointer-drag-bead.md) | ⬜ |
-| 3 | BeadRow — la primitiva central | [task-03-bead-row.md](task-03-bead-row.md) | ⬜ |
-| 4 | Rekenrek | [task-04-rekenrek.md](task-04-rekenrek.md) | ⬜ |
-| 5 | Ábaco escolar + tutorial interactivo | [task-05-abaco-tutorial.md](task-05-abaco-tutorial.md) | ⬜ |
-| 6 | TenFrame (marco de diez) | [task-06-ten-frame.md](task-06-ten-frame.md) | ⬜ |
-| 7 | NumberLine (recta numérica) | [task-07-number-line.md](task-07-number-line.md) | ⬜ |
-| 8 | Primitivas de respuesta (NumberTiles, AnswerSlot, NumberPad) | [task-08-answer-primitives.md](task-08-answer-primitives.md) | ⬜ |
-| 9 | ExerciseEngine + generadores + validadores | [task-09-exercise-engine.md](task-09-exercise-engine.md) | ⬜ |
-| 10 | ActivityShell + FeedbackBanner + ExerciseRunner | [task-10-activity-shell.md](task-10-activity-shell.md) | ⬜ |
-| 11 | Ejercicios de Representar e Identificar | [task-11-represent-identify.md](task-11-represent-identify.md) | ⬜ |
-| 12 | Ejercicio de Descomposición | [task-12-decomposition.md](task-12-decomposition.md) | ⬜ |
-| 13 | Ejercicio de Completar Series | [task-13-series.md](task-13-series.md) | ⬜ |
-| 14 | Ejercicio de Posición en Recta Numérica | [task-14-number-line-placement.md](task-14-number-line-placement.md) | ⬜ |
-| 15 | Home, navegación y ensamblaje | [task-15-home-navigation.md](task-15-home-navigation.md) | ⬜ |
-
-### Guías
-
-| Guía | Documento |
-|------|-----------|
-| Deploy (GitHub Pages) | [guia-deploy.md](guia-deploy.md) |
-| Backlog de mejoras (análisis 2026-11-13) | [backlog-mejoras.md](backlog-mejoras.md) |
-| Mejoras menores de UX | [mejoras-futuras.md](mejoras-futuras.md) |
 
 ---
 
@@ -117,7 +88,7 @@ BeadRow (configurable)
 
 ---
 
-## Estructura de archivos objetivo
+## Estructura de archivos
 
 ```
 mathlab/
@@ -167,7 +138,7 @@ mathlab/
 │   │   │   └── ExerciseRunner.tsx        # Conecta engine con UI (orquestador)
 │   │   ├── tutorial/
 │   │   │   └── AbacusTutorial.tsx        # Tutorial paso a paso del ábaco
-│   │   └── layout/
+│   │   └── layout/                       # PENDIENTE (T15, ver roadmap)
 │   │       ├── Home.tsx                  # Pantalla principal
 │   │       └── Navigation.tsx            # Botón atrás + título
 │   └── lib/
@@ -196,37 +167,13 @@ mathlab/
 │   └── lib/
 │       └── math.test.ts
 └── docs/
-    ├── README.md                        ← este archivo
+    ├── roadmap.md                       # Índice de tareas e ideas
+    ├── architecture.md                  ← este archivo
     ├── 00-contexto-y-requisitos.md
-    ├── task-01-scaffolding-tipos-dificultad.md
-    ├── task-02-pointer-drag-bead.md
-    ├── task-03-bead-row.md
-    ├── task-04-rekenrek.md
-    ├── task-05-abaco-tutorial.md
-    ├── task-06-ten-frame.md
-    ├── task-07-number-line.md
-    ├── task-08-answer-primitives.md
-    ├── task-09-exercise-engine.md
-    ├── task-10-activity-shell.md
-    ├── task-11-represent-identify.md
-    ├── task-12-decomposition.md
-    ├── task-13-series.md
-    ├── task-14-number-line-placement.md
-    └── task-15-home-navigation.md
+    ├── guia-deploy.md
+    ├── task-13..15-*.md                 # Especificaciones pendientes
+    ├── AAMMDD--<slug>.md                # Documentos puntuales
+    └── archive/                         # Tareas 01-12 completadas
 ```
 
 ---
-
-## Cómo usar esta documentación
-
-Cada tarea (01–15) es un documento autocontenido con:
-
-- **Objetivo** — qué se consigue al completarla
-- **Contexto** — qué tareas previas necesita y qué conceptos usar
-- **Archivos a crear** — lista exacta con interfaces, props, y comportamiento detallado
-- **Tests** — qué tests escribir y qué verificar
-- **Criterio de éxito** — cómo saber que la tarea está completa
-
-Las tareas están diseñadas para ejecutarse en orden. Cada una construye sobre la anterior.
-
-El documento `00-contexto-y-requisitos.md` define el marco general: perfil de usuario, requisitos funcionales y no funcionales, decisiones técnicas, y las metodologías pedagógicas que guían el diseño.

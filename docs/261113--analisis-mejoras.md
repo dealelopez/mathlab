@@ -1,4 +1,8 @@
-# Backlog de mejoras (análisis 2026-11-13)
+# Análisis de mejoras — 2026-11-13
+
+> Estado vigente de cada ID: [`roadmap.md`](roadmap.md). Este documento es el detalle
+> (problema, dirección, aceptación) y la tabla de estado de abajo refleja solo el momento
+> del análisis.
 
 Resultado de revisar el código tras la tarea 12 (último commit: `f39bd73`).
 Este documento es el plan previo: nada de lo que figura aquí está implementado todavía.
@@ -35,16 +39,15 @@ Este documento es el plan previo: nada de lo que figura aquí está implementado
 | [TECH-03](#tech-03--ci-en-pull-requests) | CI en pull requests y paso de typecheck | Mantenimiento | P3 | S | ⬜ |
 | [TECH-04](#tech-04--rng-inyectable-en-generadores) | RNG inyectable en generadores | Mantenimiento | P3 | M | ⬜ |
 
-## Orden de ejecución propuesto
+## Orden de ejecución
 
-1. **Fase 0 — Entorno:** instalar dependencias y comprobar que `pnpm test` y `pnpm build` pasan. Anotar el resultado base.
-2. **Fase 1 — Correcciones:** BUG-01, BUG-02, BUG-03 (un commit por bug, con test de regresión).
-3. **Fase 2 — Ensamblaje:** TENFRAME-01 y PROD-01.
-4. **Fase 3 — Valor didáctico:** PROD-02, PROD-03, A11Y-01.
-5. **Fase 4 — Calidad:** TECH-01, TECH-02, TECH-03.
-6. **Fase 5 — Pulido:** UX-01, UX-02, TECH-04, PROD-04.
+Fases y orden en [`roadmap.md`](roadmap.md). Antes de empezar cualquier fase hay que
+instalar dependencias y comprobar que `pnpm test` y `pnpm build` pasan, y anotar el
+resultado base.
 
-TECH-01 conviene hacerlo **antes** de PROD-02 si ambos tocan `ExerciseRunner`, para evitar conflictos. Si se prefiere entregar valor antes, invertir el orden y aceptar el refactor posterior.
+TECH-01 conviene hacerlo **antes** de PROD-02 si ambos tocan `ExerciseRunner`, para
+evitar conflictos. Si se prefiere entregar valor antes, invertir el orden y aceptar el
+refactor posterior.
 
 ---
 
@@ -115,7 +118,7 @@ TECH-01 conviene hacerlo **antes** de PROD-02 si ambos tocan `ExerciseRunner`, p
 
 ### TENFRAME-01 — Interacción de rellenado
 
-Detalle en [mejoras-futuras.md](mejoras-futuras.md#tenframe-01--interacción-de-rellenado-menor). Resumen: hoy cada toque suma o resta 1 ficha; el niño debería poder tocar una celda y rellenar **hasta esa celda**, y tocar una celda llena para vaciar **hasta esa celda**.
+Detalle en [261013--tenframe-interaccion.md](261013--tenframe-interaccion.md). Resumen: hoy cada toque suma o resta 1 ficha; el niño debería poder tocar una celda y rellenar **hasta esa celda**, y tocar una celda llena para vaciar **hasta esa celda**.
 
 **Decisión pendiente:** semántica exacta al tocar una celda llena. Opciones:
 - (a) vaciar desde esa celda en adelante (el valor pasa a `índice`),

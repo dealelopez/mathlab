@@ -8,7 +8,11 @@
 ## Decisiones tomadas por el usuario
 
 - Se **añaden operaciones** (suma y resta) a mathlab.
-- Edad objetivo: **6-7 años** (los rangos de abajo salen de ahí: 10, 20, 50, 100).
+- Edad objetivo: **6-7 años** para los niveles 1-3. Los niveles 4 y 5 (más de 100) los pidió
+  el usuario después y van más allá de lo que Innovamat trabaja en 2.º de primaria (hasta
+  100): son para niños que avanzan más deprisa.
+- **Niveles pedidos:** el nivel 3 es el «medio» (sumas hasta 100), el nivel 4 son sumas de
+  **más de 100**, y el nivel 5 lo decidí yo (ver A2).
 - El tiempo se mide, pero eso es otra tarea (T25). **No** tocar tiempos aquí.
 
 ## Qué ve y hace el niño
@@ -49,6 +53,7 @@ operación en los saltos que quiera** hasta llegar al resultado:
 - `src/engine/types.ts`, en `ExerciseSetup`, añadir:
   - `operands?: [number, number];` (los dos números de la operación, en orden).
   - `jumpSizes?: number[];` (tamaños de salto que ofrece la vista).
+  - `numberLineStep?: number;` (separación de las marcas de la recta).
   - Se reutilizan `numberLineRange` y `visibleNumbers` (ya existen).
 - Al añadir los tipos, `tsc` marcará todos los `Record<ExerciseType, ...>`: hay que
   completar `DIFFICULTY_MAP`, `GENERATORS`, `VALIDATORS` (motor) y `EXERCISE_LABELS`
@@ -56,44 +61,80 @@ operación en los saltos que quiera** hasta llegar al resultado:
 
 ### A2. Dificultad (`src/engine/difficulty.ts`)
 
-Las dos operaciones usan la misma configuración. `numberRange` = **rango del resultado**
-(para restas, del minuendo). Añadir `add` y `subtract` con estos valores (resto de campos
-como en `placement`: `distractorCount: 0, hiddenCount: 0, tolerance: 0, decomposeParts: 2, seriesPatterns: []`):
+Las dos operaciones usan la misma configuración. `numberRange` = **rango del resultado** en
+sumas y **del minuendo** (el número del que se resta) en restas. Añadir `add` y `subtract`
+(resto de campos como en `placement`: `distractorCount: 0, hiddenCount: 0, tolerance: 0,
+decomposeParts: 2, seriesPatterns: []`; no poner `validManipulatives`).
 
-| Nivel | `numberRange` | `manipulativeConfig.numberLineRange` | Números en la recta |
-|---|---|---|---|
-| 1 | `[2, 10]` | `[0, 10]` | todos |
-| 2 | `[2, 20]` | `[0, 20]` | todos |
-| 3 | `[2, 20]` | `[0, 20]` | solo graduados (`visibleNumbersFor`) |
-| 4 | `[2, 50]` | `[0, 50]` | solo graduados |
-| 5 | `[2, 100]` | `[0, 100]` | solo graduados |
+| Nivel | `numberRange` | Qué practica | Números en la recta | Marcas | Saltos disponibles |
+|---|---|---|---|---|---|
+| 1 | `[2, 10]` | hasta 10 | todos | cada 1 | 1 2 3 4 5 |
+| 2 | `[2, 20]` | hasta 20 | todos | cada 1 | 1 2 3 4 5 10 |
+| 3 (medio) | `[21, 100]` | hasta 100 | cada 10 | cada 5 | 1 2 3 4 5 10 20 30 40 50 |
+| 4 | `[101, 300]` | **más de 100** | cada 50 | cada 10 | 1 2 3 4 5 10 20 30 40 50 100 |
+| 5 | `[101, 1000]` | hasta 1000, **recta vacía** | ninguno | cada 50 | 1 2 5 10 20 50 100 200 |
 
-El nivel 3 repite el rango del 2 a propósito: **retira apoyo** (idea de Innovamat de
-quitar andamios poco a poco). No poner `validManipulatives`.
+**Nivel 5 (criterio mío).** Combina el mayor rango con el menor apoyo: la recta no
+lleva ningún número (la «recta numérica vacía» con la que Innovamat cierra el recorrido
+del collar de bolas). El niño solo ve el número de partida y las etiquetas de sus propios
+saltos, así que debe llevar la cuenta mentalmente. Añade saltos de 100 y 200 y quita los
+pequeños intermedios (3, 4, 30, 40) para que tenga que descomponer. Es el nivel más duro:
+no hace falta que lo supere un niño de 6-7 años.
+
+Los niveles 3-5 ofrecen saltos de unidades, decenas y centenas: **descomponer por valor
+posicional** (`48 + 28` = `+20 +8`, o `+20 +5 +3`) es la otra estrategia de Innovamat.
 
 ### A3. Generadores (`src/engine/generators/operation.ts`, nuevo)
 
 Exportar `generateAdd` y `generateSubtract` con la firma de `GeneratorFn`
-(`(difficulty, manipulative?, answerMode?) => Exercise`; ambos parámetros extra se ignoran).
-Sea `[lo, hi] = numberLineRange` del nivel y `max = hi`:
+(`(difficulty, manipulative?, answerMode?) => Exercise`; los dos últimos se ignoran).
+Con `[lo, hi] = config.numberRange`:
 
-- **Suma:** `a = randomInt(1, max - 1)`, `b = randomInt(1, max - a)`, resultado `a + b`
-  (siempre entre 2 y `max`).
-- **Resta:** `a = randomInt(2, max)`, `b = randomInt(1, a - 1)`, resultado `a - b`
-  (siempre entre 1 y `max - 1`).
-- `setup`: `{ manipulative: 'numberline', operands: [a, b], numberLineRange: [lo, hi],
-  visibleNumbers, jumpSizes, readOnly: false }`.
-  - `visibleNumbers`: lista de **todos** los enteros de `lo` a `hi` en niveles 1-2;
-    `visibleNumbersFor(lo, hi)` (de `generators/placement.ts`) en niveles 3-5.
-  - `jumpSizes`: `[1, 2, 3, 4, 5, 10].filter((s) => s < max)` (en el nivel 1, `max = 10`, el
-    salto de 10 no cabría nunca, así que no se ofrece: queda `[1, 2, 3, 4, 5]`).
-- `correctAnswer`: el resultado (número). `answerMode: 'free'`. `manipulative: 'numberline'`.
+- **Suma:** `r = randomInt(lo, hi)` es el resultado. `a = randomInt(ma, Ma)` con
+  `ma = Math.max(1, Math.round(r / 4))` y `Ma = Math.min(r - 1, Math.round(r * 3 / 4))`
+  (si `ma > Ma`, usar `ma = Ma`); `b = r - a`. Así los dos sumandos son ≥ 1 y ninguno es
+  trivialmente pequeño. Punto de partida `start = a`; llegada `end = r`.
+- **Resta:** `m = randomInt(lo, hi)` es el minuendo. `b = randomInt(mb, Mb)` con
+  `mb = Math.max(1, Math.round(m / 5))` y `Mb = Math.min(m - 1, Math.round(m * 4 / 5))`
+  (si `mb > Mb`, `mb = Mb`); resultado `m - b` (siempre ≥ 1). Operandos `[m, b]`;
+  `start = m`; `end = m - b`.
+
+**Ventana de la recta** (`numberLineRange`), con `low = Math.min(start, end)` y
+`high = Math.max(start, end)`:
+
+| Nivel | `numberLineRange` |
+|---|---|
+| 1 | `[0, 10]` |
+| 2 | `[0, 20]` |
+| 3 | `[0, 100]` |
+| 4 y 5 | `[Math.floor(low / 100) * 100, Math.ceil(high / 100) * 100]` |
+
+(Ejemplo nivel 4: `128 + 57 = 185` → `[100, 200]`; `187 + 68 = 255` → `[100, 300]`.) Una
+ventana pequeña mantiene los arcos visibles; con una recta de 0 a 1000 un salto de 5 mediría
+2 px. Si por algún caso `high` fuese múltiplo de 100 y coincidiera con `low`, sumar 100 al
+extremo superior.
+
+`setup` (campos nuevos en `ExerciseSetup`: `operands?: [number, number]`, `jumpSizes?:
+number[]`, `numberLineStep?: number`; se reutilizan `numberLineRange` y `visibleNumbers`):
+
+- `manipulative: 'numberline'`, `operands`, `numberLineRange`, `readOnly: false`.
+- `numberLineStep` (separación de las marcas): nivel 1-2 → `1`; nivel 3 → `5`; nivel 4 →
+  `10`; nivel 5 → `50`. Los extremos de la ventana son múltiplos de esos pasos.
+- `visibleNumbers`: niveles 1-2, **todos** los enteros de `lo` a `hi` de la ventana;
+  nivel 3, `visibleNumbersFor(lo, hi)` (de `generators/placement.ts`: da cada 10 y los
+  extremos); nivel 4, los múltiplos de 50 dentro de la ventana más sus dos extremos;
+  nivel 5, `[]` (ningún número).
+- `jumpSizes`: la lista de la tabla de A2, filtrada con `.filter((s) => s < hi - lo)`
+  (`lo`/`hi` de la ventana; en el nivel 1 el 10 no cabe, así que queda `[1,2,3,4,5]`).
+
+Resto del ejercicio:
+- `correctAnswer`: el resultado. `answerMode: 'free'`. `manipulative: 'numberline'`.
 - `instruction`:
   - suma: `` `¿Cuánto es ${a} + ${b}? Haz saltos en la recta hacia delante.` ``
-  - resta: `` `¿Cuánto es ${a} − ${b}? Haz saltos en la recta hacia atrás.` `` (signo `−`, U+2212).
-- `deduplicationKey`: `` `add-${difficulty}-${a}+${b}` `` / `` `subtract-${difficulty}-${a}-${b}` ``.
+  - resta: `` `¿Cuánto es ${m} − ${b}? Haz saltos en la recta hacia atrás.` `` (signo `−`, U+2212).
+- `deduplicationKey`: `` `add-${difficulty}-${a}+${b}` `` / `` `subtract-${difficulty}-${m}-${b}` ``.
 - `hints`: `['Puedes dar un salto grande o varios pequeños']`.
-- `id`: `generateUniqueId(`add-${difficulty}`)` (igual que los demás generadores).
+- `id`: `generateUniqueId(`add-${difficulty}`)` (y `subtract-`), como los demás generadores.
 
 Registrar en `engine.ts` (`GENERATORS`): `add: generateAdd`, `subtract: generateSubtract`.
 
@@ -120,12 +161,25 @@ Reglas, en este orden:
 ### A5. Tests de la subtarea A
 
 - `tests/engine/generators/operation.test.ts` (300 muestras por nivel y operación):
-  operandos enteros dentro de rango; `a + b === correctAnswer` (suma) o `a - b` (resta);
-  resultado dentro de `numberRange`; `setup.numberLineRange` correcto; en niveles 1-2 todos
-  los números visibles, en 3-5 son menos que todos; `jumpSizes` siempre menor que `max` (nivel 1 → `[1,2,3,4,5]`; niveles 2-5 incluyen el 10);
-  `instruction` contiene los operandos y **no** el resultado como número aislado
-  (`!new RegExp(`\\b${result}\\b`).test(instruction)` solo si `result` no coincide con
-  ningún operando; si coincide, saltar esa comprobación); claves de duplicados distintas.
+  - **Suma:** `a + b === correctAnswer`, ambos ≥ 1, y `correctAnswer` dentro de `numberRange`.
+  - **Resta:** `m - b === correctAnswer`, `b ≥ 1`, `correctAnswer ≥ 1`, y `m` dentro de
+    `numberRange`.
+  - **Niveles pedidos por el usuario:** en el nivel 3, el resultado (o minuendo) nunca
+    supera 100 y el mínimo observado es > 20; en los niveles 4 y 5 **siempre es > 100**; el
+    nivel 5 alcanza valores > 300 en alguna muestra.
+  - **Ventana:** niveles 1-3 son `[0,10]`, `[0,20]`, `[0,100]`; en 4-5 los extremos son
+    múltiplos de 100, `lo < hi`, y la ventana contiene `start` y `end`.
+  - `numberLineStep` 1, 1, 5, 10, 50 según nivel, y los extremos de la ventana son múltiplos.
+  - `visibleNumbers`: niveles 1-2, todos los de la ventana; nivel 3, múltiplos de 10 y
+    extremos; nivel 4, múltiplos de 50 y extremos; nivel 5, lista vacía.
+  - `jumpSizes`: nivel 1 es `[1,2,3,4,5]` (sin 10), nivel 2 contiene 10, nivel 4 contiene 100,
+    nivel 5 contiene 200; todos menores que el ancho de la ventana.
+  - `instruction` contiene los operandos y **no** el resultado como número aislado
+    (`!new RegExp(`\\b${result}\\b`).test(instruction)`; saltar la comprobación si el resultado
+    coincide con algún operando, p. ej. `8 − 4 = 4`).
+  - **No repetición:** generar 10 ejercicios con un mismo `ExerciseEngine` en los niveles 1 a
+    5 y comprobar que las 10 claves son distintas (espacio grande) y que nunca hay dos
+    seguidas iguales.
 - `tests/engine/validators/operation.test.ts`: camino correcto de un salto, de varios, y
   de muchos de `+1`; incorrecto por quedarse corto y por pasarse (mensajes exactos);
   vacío; sentido contrario; fuera de la recta; los mensajes **no contienen** el resultado.
@@ -139,15 +193,18 @@ Commit: `feat(IDEA-01): motor de sumas y restas con saltos (generadores, validad
 
 ### B1. `NumberLine` (`src/components/manipulatives/NumberLine.tsx`)
 
-1. `Jump` añade `label?: string`. Si existe, dibujar un `<text>` centrado sobre el punto
-   más alto del arco con `data-testid="numberline-jump-label"`, `fontSize={12}`,
-   `fontWeight="bold"` y el color del salto. El punto más alto del arco está en
-   `y = baseY - 4 - lift`; poner el texto 4 px por encima.
+1. `Jump` añade `label?: string`. Si existe **y el arco mide al menos 22 px de ancho**
+   (`Math.abs(x2 - x1) >= 22`; en rectas largas los saltos pequeños son tan estrechos que
+   las etiquetas se amontonarían), dibujar un `<text>` centrado sobre el punto más alto del
+   arco con `data-testid="numberline-jump-label"`, `fontSize={12}`, `fontWeight="bold"` y el
+   color del salto. El punto más alto del arco está en `y = baseY - 4 - lift`; poner el texto
+   4 px por encima.
 2. `baseY` hoy es la constante `45` y el arco puede subir hasta `y = 1`: no cabe una
    etiqueta. Cambiar `const baseY = 45` por `const baseY = height - 35`. Con el alto por
    defecto (80) **sigue valiendo 45**, así que ningún test ni pantalla existente cambia.
-3. Tests nuevos en `NumberLine.test.tsx`: un salto con `label: '+2'` pinta el texto `+2`;
-   un salto sin `label` no pinta ninguno; con `height={110}` la línea base queda a `y = 75`
+3. Tests nuevos en `NumberLine.test.tsx`: un salto ancho con `label: '+2'` pinta el texto `+2`;
+   un salto con `label` pero de menos de 22 px (p. ej. de 0 a 1 en una recta 0-100) no lo
+   pinta; un salto sin `label` no pinta ninguno; con `height={110}` la línea base queda a `y = 75`
    (leer el `y1` de la línea base) y con el alto por defecto a `45`.
 
 ### B2. Vista `src/components/activities/views/JumpsView.tsx` (nuevo)
@@ -166,7 +223,8 @@ Props: `{ exercise: Exercise; locked: boolean; onAnswer: (a: Answer) => void }`.
   con la lista resultante (puede ser `[]`).
 - Botones con `min-h-11 min-w-11` y las clases de los demás (`cursor-pointer rounded-lg
   border-2 ...`; copiar de `OptionGroup`).
-- Recta: `<NumberLine min={lo} max={hi} showNumbers={setup.visibleNumbers} height={110}
+- Recta: `<NumberLine min={lo} max={hi} step={setup.numberLineStep ?? 1}
+  showNumbers={setup.visibleNumbers} height={110}
   jumps={...} markers={...} />` sin `interactive` (no se toca la recta).
   - `jumps`: un elemento por salto `{ from, to, color: '#6366F1', label: `${signo}${tamaño}` }`
     con `signo` `+` o `−` y `tamaño = Math.abs(to - from)`.
@@ -206,6 +264,15 @@ que quepa en lo que falta (`jump-btn-N`).
 - Resta: lo mismo con `−N` y sentido contrario; el primer salto desde `a` baja de `a`.
 - Los botones que se saldrían de la recta están `disabled` (p. ej. en el nivel 2, `+10`
   cuando faltan menos de 10 hasta `hi`).
+- **Niveles 3-5:**
+  - Nivel 3: recta de 0 a 100 con números cada 10; existen `jump-btn-20` y `jump-btn-50`;
+    un camino por decenas y unidades (p. ej. `+20 +20 +5 +3` para `a + 48`) acierta.
+  - Nivel 4: el resultado es > 100 y la recta empieza y acaba en múltiplos de 100; existe
+    `jump-btn-100`; un camino correcto con saltos de 100, 10 y 1 acierta.
+  - Nivel 5: la recta **no** tiene ningún `numberline-number`; el único número visible es la
+    etiqueta del marcador de partida; un camino correcto acierta.
+  - Un salto que sobrepasa el extremo de la ventana tiene su botón `disabled`.
+  - Restas de nivel 4: el minuendo es > 100 y los saltos bajan.
 - Ejecutar la suite 5 veces (hay azar).
 
 Commit: `feat(IDEA-01): vista de saltos sobre la recta para sumas y restas`.

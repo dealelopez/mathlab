@@ -59,7 +59,7 @@ las que el usuario quiere primero; el resto, de menos a más riesgo. Una tarea p
 
 | Orden | Spec | ID | Esfuerzo | Notas |
 |---|---|---|---|---|
-| 0 | [`task-23-sumas-restas-saltos.md`](task-23-sumas-restas-saltos.md) | IDEA-01 (P1) | L | **Prioridad del usuario.** Tres subtareas (A, B, C) |
+| 0 | [`task-23-sumas-restas-saltos.md`](task-23-sumas-restas-saltos.md) | IDEA-01 (P1) | L | **Prioridad del usuario.** Niveles: ≤10, ≤20, ≤100 (medio), >100 y ≤1000 en recta vacía. Tres subtareas (A, B, C) |
 | 0 | [`task-24-completar-hasta-10.md`](task-24-completar-hasta-10.md) | IDEA-01 (P3) | M | Independiente de las demás |
 | 1 | [`task-16-tenframe-rellenado.md`](task-16-tenframe-rellenado.md) | TENFRAME-01 | S | Decisión (a)/(b) propuesta: (a) |
 | 2 | [`task-17-numberline-responsive.md`](task-17-numberline-responsive.md) | UX-04 | S | Solo escalado; el `step` queda fuera |

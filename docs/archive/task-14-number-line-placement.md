@@ -135,3 +135,17 @@ Dificultades:
 - [ ] Feedback incorrecto muestra brevemente la posición correcta
 - [ ] Todos los tests pasan
 - [ ] Demo: "Coloca el 7 en la recta" (0-10, todos visibles). Tocar posición → feedback. Cambiar a dificultad 5 → "Coloca el 45 en la recta" (0-100, solo marcas de 10)
+
+---
+
+## Cierre (2026-11-13)
+
+Completada con estas diferencias respecto a la especificación:
+
+- **Validación automática** al colocar el marcador (sin botón "Comprobar").
+  Tras acertar, la recta se bloquea (BUG-02). Tras fallar se puede reintentar.
+- **No implementado: marcador verde con la posición correcta tras un fallo.** Queda
+  como UX-03 en el [roadmap](../roadmap.md).
+- **Step fijo en la recta de la actividad** (1). Los sandboxes de la T15 sí ajustan el
+  step por rango. Queda recogido en UX-04.
+- Demo accesible: Home → Recta numérica → Actividades → "Colocar en la recta".

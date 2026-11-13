@@ -71,3 +71,48 @@ Un commit local por paso. Sin `git push`.
 4. TECH-01: dividir `ExerciseRunner.tsx` antes de PROD-02.
 
 PROD-02 (resumen de sesión) queda fuera de esta ronda.
+
+## Resultado
+
+Base final: 30 ficheros de test, 320 tests, `tsc -b` y `vite build` correctos
+(bundle JS 275 kB / 85 kB gzip). La suite completa se ejecutó 5 veces seguidas sin
+fallos.
+
+| Paso | Commit | Resultado |
+|---|---|---|
+| 1. pnpm y docs | `38f21c7` | `packageManager: pnpm@10.34.9`; el CI lo lee (se quitó `version: 10`). P-01 y P-02 resueltos. |
+| 2. BUG-01 | `f30a778` | Aviso en identify sin respuesta. |
+| 2. BUG-02 | `1a12187` | Recta bloqueada tras acertar. El test confirmó que el bug era real. |
+| 2. BUG-03 | `44adbe8` | Un solo ejercicio al montar. P-04 resuelto. |
+| 2. BUG-04 (nuevo) | `4bdc008` | El ábaco de una columna no podía mostrar el 10. |
+| 3. T15 / PROD-01 | `3fddd68` | Home, sandboxes, actividades, sesión, `?dev`. T13 y T14 accesibles. |
+| 3. T13 tests | `68612d4` | Series de extremo a extremo (8 tests). |
+| 4. TECH-01 | `6bd989f` | `ExerciseRunner` en una vista por fichero. `NumberTiles` queda pendiente. |
+
+### Hallazgo no previsto: BUG-04
+
+Un test (`identify: tantos huecos como cifras del valor mostrado`) fallaba en
+aproximadamente 1 de cada 10 ejecuciones. No era un test frágil: en los niveles 1-2 el
+ábaco tiene una sola columna y el rango llega a 10, y `Abacus` recortaba el valor a una
+cifra, de modo que el 10 se dibujaba como 0 sin cuentas. Un niño con el ábaco de nivel 2
+lo habría visto en 1 de cada 10 ejercicios.
+
+### Ajustes frente al plan
+
+- El plan hablaba de "3 bugs"; fueron 4.
+- El rekenrek del sandbox ofrece 1 y 2 filas, no 1, 2, 5, 10 como decía la spec de T15,
+  por la regla de `difficulty.ts` (más de 2 filas es un ábaco).
+- La página de actividades solo ofrece los niveles válidos para el manipulativo
+  (`getAvailableLevels`). Sin ese filtro, el marco de diez en nivel 5 habría pedido
+  "Muestra el 87" con 20 casillas.
+- P-03 (`architecture.md`), P-05 y P-06 siguen abiertos: P-03 se actualizó junto con
+  esta ronda; P-05 pasa a UX-04 y P-06 sigue como TECH-04.
+
+### Sin verificar
+
+- **Navegador e iPad.** No pude abrir la app. Responsive, tamaño de los botones y el
+  arrastre táctil están cubiertos solo por tests y por el build.
+- **CI en GitHub.** El cambio de `deploy.yml` (quitar `version: 10` y leer
+  `packageManager`) sigue la documentación de `pnpm/action-setup`, pero no se ha
+  ejecutado en GitHub. Si el workflow falla en el paso "Setup pnpm" tras el próximo
+  push, restaurar `version: 10` en ese paso.

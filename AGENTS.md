@@ -26,11 +26,13 @@ GitHub Pages, sin backend.
 
 | Ruta | Responsabilidad |
 |---|---|
-| `src/App.tsx` | Demo temporal; la navegación real es la tarea 15 |
+| `src/App.tsx` | Navegación por estado (Home, sandbox, actividades, sesión, tutorial). `?dev` abre `DevPage` |
+| `src/components/layout/` | Home, Navigation, SandboxPage, ActivitiesPage, SessionPage, DevPage, OptionGroup, `types.ts` (Page), `catalog.ts` |
 | `src/engine/` | Lógica pura (sin React): `engine.ts`, `difficulty.ts`, `generators/`, `validators/` |
 | `src/components/primitives/` | Bead, BeadRow, Counter, NumberTiles, AnswerSlot, NumberPad, DragDropContext |
 | `src/components/manipulatives/` | Rekenrek, Abacus, TenFrame, NumberLine |
-| `src/components/activities/` | ActivityShell, FeedbackBanner, ExerciseRunner |
+| `src/components/activities/` | ActivityShell, FeedbackBanner, ExerciseRunner (orquestador) |
+| `src/components/activities/views/` | Una vista por tipo de ejercicio: Manipulative, Decompose, Series, IdentifyFree, Placement |
 | `src/components/tutorial/` | AbacusTutorial |
 | `src/hooks/usePointerDrag.ts` | Drag unificado ratón/táctil (Pointer Events) |
 | `src/lib/math.ts` | Utilidades puras (random, shuffle, dígitos) |
@@ -72,9 +74,13 @@ GitHub Pages, sin backend.
 
 ## Estado actual (2026-11-13)
 
-- Tareas 01-12 completadas. T13 y T14 parciales (motor y vistas, sin demo accesible).
-  T15 (Home y navegación) pendiente.
-- Análisis de mejoras documentado en `docs/261113--analisis-mejoras.md`. Nada
-  implementado todavía.
-- No se ha podido verificar el estado de tests y build en la última sesión (sin
-  dependencias instaladas): ejecutar `pnpm install && pnpm test` para fijar la base.
+- Tareas 01-15 completadas. La app es usable de punta a punta: Home → sandbox,
+  actividades o tutorial → sesión → volver.
+- Correcciones hechas: BUG-01, BUG-02, BUG-03 y BUG-04 (cada una con test de regresión).
+- Base verificada: 30 ficheros de test, 320 tests, `pnpm build` correcto. pnpm lo fija
+  `packageManager` en `package.json` (pnpm 10).
+- Pendiente de comprobar a ojo en navegador e iPad: el diseño de Home, sandboxes y
+  actividades solo está cubierto por tests y build.
+- Siguiente: ver `docs/roadmap.md` (TENFRAME-01, PROD-02, TECH-01 parcial, A11Y-01...).
+  Las decisiones abiertas están al final del roadmap.
+- Análisis y resultados de la última ronda: `docs/261113--analisis-estado-proyecto.md`.

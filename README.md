@@ -9,15 +9,15 @@ Library. Despliegue en GitHub Pages.
 
 ## Estado
 
-Las tareas 01-12 están completadas. Faltan ensamblar la navegación (T15) y las demos de
-series y posición en recta (T13, T14). El estado completo está en
-[`docs/roadmap.md`](docs/roadmap.md).
+Las tareas 01-15 están completadas: Home, exploración libre de cada manipulativo,
+actividades guiadas (representar, identificar, descomponer, series, posición en recta) y
+tutorial del ábaco. El estado completo está en [`docs/roadmap.md`](docs/roadmap.md).
 
 ## Uso
 
 ```bash
 pnpm install
-pnpm dev        # http://localhost:5173/mathlab/
+pnpm dev        # http://localhost:5173/mathlab/ (añadir ?dev para el selector libre)
 pnpm test
 pnpm build
 ```
@@ -26,13 +26,14 @@ pnpm build
 
 ```
 src/
-├── App.tsx            # Demo temporal (la navegación real es la T15)
+├── App.tsx            # Navegación por estado (Home, sandbox, actividades, sesión)
 ├── types.ts           # Tipos globales
 ├── engine/            # Lógica pura: generadores, validadores, dificultad
 ├── components/
 │   ├── primitives/    # Bead, BeadRow, Counter, NumberTiles, AnswerSlot, NumberPad
 │   ├── manipulatives/ # Rekenrek, Abacus, TenFrame, NumberLine
-│   ├── activities/    # ActivityShell, FeedbackBanner, ExerciseRunner
+│   ├── activities/    # ActivityShell, FeedbackBanner, ExerciseRunner, views/
+│   ├── layout/        # Home, Navigation, SandboxPage, ActivitiesPage, SessionPage
 │   └── tutorial/      # AbacusTutorial
 ├── hooks/             # usePointerDrag
 └── lib/               # Utilidades puras

@@ -258,3 +258,26 @@ Home
 - [ ] Flujo completo end-to-end funciona: Home → elegir → practicar → volver
 - [ ] Todos los tests pasan
 - [ ] La app es usable en móvil (responsive básico)
+
+---
+
+## Cierre (2026-11-13)
+
+Completada. Diferencias respecto a la especificación:
+
+- **Páginas.** Se añadió `exercise-setup` (Descomposición y Series, que no cuelgan de un
+  manipulativo) y `activity-session` guarda `backTo`, para volver a la página desde la
+  que se lanzó la sesión. Los tipos están en `src/components/layout/types.ts`.
+- **Niveles filtrados por manipulativo.** Rekenrek y marco de diez solo ofrecen los
+  niveles 1-3 (`getAvailableLevels` en `src/engine/difficulty.ts`); el generador no filtra
+  por `validManipulatives`.
+- **Rekenrek con 1 o 2 filas** en el sandbox (no 1, 2, 5, 10): un rekenrek real tiene 2
+  filas y más se considera un ábaco (ver `difficulty.ts`).
+- **Modo de respuesta** disponible para identify, decompose y series (no solo
+  decompose y series).
+- **Demo anterior conservada en `?dev`** (`DevPage`), ahora con series y placement.
+- **Tutorial del ábaco** sin barra de navegación propia: ya trae "Salir del tutorial".
+- **Fin de sesión:** pantalla mínima "¡Sesión completada!" con Repetir y Volver
+  (`SessionPage`). El resumen con resultados es PROD-02.
+- **Pendiente de verificar en navegador / iPad:** el diseño responsive se comprobó solo
+  con tests y build, no a ojo. La `NumberLine` tiene ancho fijo de 500 px (UX-04).

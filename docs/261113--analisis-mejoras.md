@@ -5,28 +5,32 @@
 > del análisis.
 
 Resultado de revisar el código tras la tarea 12 (último commit: `f39bd73`).
-Este documento es el plan previo: nada de lo que figura aquí está implementado todavía.
+Este documento es el plan previo. **Actualización 2026-11-13:** BUG-01, BUG-02, BUG-03,
+PROD-01 y la parte de `ExerciseRunner` de TECH-01 están hechos, y se descubrió y corrigió
+BUG-04 (ver las secciones correspondientes). El resto sigue pendiente.
 
 > El análisis se hizo **leyendo el código**. No se pudieron ejecutar tests ni `tsc`
-> (sin `node_modules`, `pnpm` ni `npx` en el PATH de la sesión). Los elementos
-> marcados como *a verificar* hay que reproducirlos antes de corregirlos.
+> (sin `node_modules`, `pnpm` ni `npx` en el PATH de la sesión). Esa limitación quedó
+> resuelta el 2026-11-13: base verificada en
+> [`261113--analisis-estado-proyecto.md`](261113--analisis-estado-proyecto.md).
 
 ## Cómo leer este documento
 
 - **ID**: se usa en commits y conversaciones (`BUG-01`, `PROD-02`...).
 - **Prioridad**: P1 (hacer primero), P2 (después), P3 (cuando haya hueco).
 - **Esfuerzo**: S (< 1 h), M (media jornada), L (más de un día).
-- **Estado**: ⬜ pendiente · 🔎 a verificar · ✅ hecho.
+- **Estado**: ⬜ pendiente · 🔎 a verificar · ◐ parcial · ✅ hecho.
 - Convención de commits y push: ver `AGENTS.md` (no hacer `git push` sin permiso).
 
 ## Resumen
 
 | ID | Título | Tipo | Prioridad | Esfuerzo | Estado |
 |----|--------|------|-----------|----------|--------|
-| [BUG-01](#bug-01--respuesta-vacía-en-identify-se-valida-como-0) | Respuesta vacía en identify se valida como 0 | Bug | P1 | S | ⬜ |
-| [BUG-02](#bug-02--la-recta-permite-recolocar-tras-acertar-placement) | La recta permite recolocar tras acertar | Bug | P1 | S | 🔎 |
-| [BUG-03](#bug-03--exerciserunner-genera-un-ejercicio-de-más-al-montar) | ExerciseRunner genera un ejercicio de más al montar | Bug | P1 | S | ⬜ |
-| [PROD-01](#prod-01--home-y-navegación-tarea-15) | Home y navegación (tarea 15) | Producto | P1 | L | ⬜ |
+| [BUG-01](#bug-01--respuesta-vacía-en-identify-se-valida-como-0) | Respuesta vacía en identify se valida como 0 | Bug | P1 | S | ✅ |
+| [BUG-02](#bug-02--la-recta-permite-recolocar-tras-acertar-placement) | La recta permite recolocar tras acertar | Bug | P1 | S | ✅ |
+| [BUG-03](#bug-03--exerciserunner-genera-un-ejercicio-de-más-al-montar) | ExerciseRunner genera un ejercicio de más al montar | Bug | P1 | S | ✅ |
+| [BUG-04](#bug-04--el-ábaco-de-una-columna-no-puede-mostrar-el-10) | El ábaco de una columna no puede mostrar el 10 | Bug | P1 | S | ✅ |
+| [PROD-01](#prod-01--home-y-navegación-tarea-15) | Home y navegación (tarea 15) | Producto | P1 | L | ✅ |
 | [TENFRAME-01](#tenframe-01--interacción-de-rellenado) | Rellenado del TenFrame hasta la celda | UX | P1 | S | ⬜ |
 | [PROD-02](#prod-02--resumen-de-sesión-y-progreso) | Resumen de sesión y resultados | Producto | P2 | M | ⬜ |
 | [PROD-03](#prod-03--persistencia-local) | Persistencia local (localStorage) | Producto | P2 | S | ⬜ |
@@ -34,7 +38,7 @@ Este documento es el plan previo: nada de lo que figura aquí está implementado
 | [A11Y-01](#a11y-01--teclado-y-lectores-de-pantalla-en-manipulativos) | Teclado y ARIA en manipulativos | Accesibilidad | P2 | M | ⬜ |
 | [UX-01](#ux-01--metadatos-para-ipad-y-pwa) | Metadatos iPad y PWA | UX | P3 | S | ⬜ |
 | [UX-02](#ux-02--refuerzo-visual-y-sonoro) | Refuerzo visual y sonoro | UX | P3 | M | ⬜ |
-| [TECH-01](#tech-01--dividir-archivos-grandes) | Dividir `ExerciseRunner` y `NumberTiles` | Mantenimiento | P2 | M | ⬜ |
+| [TECH-01](#tech-01--dividir-archivos-grandes) | Dividir `ExerciseRunner` y `NumberTiles` | Mantenimiento | P2 | M | ◐ |
 | [TECH-02](#tech-02--eslint-y-prettier) | ESLint y Prettier | Mantenimiento | P2 | S | ⬜ |
 | [TECH-03](#tech-03--ci-en-pull-requests) | CI en pull requests y paso de typecheck | Mantenimiento | P3 | S | ⬜ |
 | [TECH-04](#tech-04--rng-inyectable-en-generadores) | RNG inyectable en generadores | Mantenimiento | P3 | M | ⬜ |
@@ -68,9 +72,11 @@ refactor posterior.
 
 **Alcance:** `ExerciseRunner.tsx` + su test.
 
+**Resuelto** en `f30a778`: `handleCheck` avisa "Escribe tu respuesta para comprobar" sin llamar al validador. En `represent` se mantiene el 0 como respuesta válida.
+
 ### BUG-02 — La recta permite recolocar tras acertar (placement)
 
-**Estado:** a verificar en navegador.
+**Estado:** reproducido con un test (el bug era real) y resuelto en `1a12187`. Decisión adoptada: tras fallar se puede reintentar; tras acertar la recta se bloquea (`readOnly`).
 
 **Dónde:** `PlacementView` en `ExerciseRunner.tsx` y `NumberLine.tsx`.
 
@@ -83,6 +89,8 @@ refactor posterior.
 - Tras fallar, el comportamiento acordado (reintentar o bloquear) está cubierto por un test.
 
 **Alcance:** `ExerciseRunner.tsx` (+ test). `NumberLine` no cambia salvo que haga falta.
+
+**Resuelto** en `1a12187`: `PlacementView` recibe `locked={feedback === 'correct'}` y lo pasa como `readOnly` a `NumberLine`.
 
 ### BUG-03 — ExerciseRunner genera un ejercicio de más al montar
 
@@ -98,6 +106,18 @@ refactor posterior.
 
 **Alcance:** `ExerciseRunner.tsx` + su test.
 
+**Resuelto** en `44adbe8`: un `useRef` guarda el último `configKey` y el efecto solo reinicia cuando cambia. Quedan 2 generaciones en `StrictMode` de desarrollo, porque React invoca dos veces los inicializadores de `useState`.
+
+### BUG-04 — El ábaco de una columna no puede mostrar el 10
+
+**Dónde:** `src/components/manipulatives/Abacus.tsx`.
+
+**Descubierto** el 2026-11-13 al investigar un test intermitente (`identify: tantos huecos como cifras del valor mostrado`).
+
+**Problema:** `Abacus` recortaba el valor a tantos dígitos como columnas. En los niveles 1-2 el ábaco tiene solo la columna U y el rango llega a 10, así que el 10 se dibujaba como `0` sin cuentas. En `identify` el niño veía un ábaco vacío con respuesta correcta 10; en `represent`, al llenar las 10 cuentas el ábaco volvía a 0. Afectaba a 1 de cada 10 ejercicios de nivel 2 con ábaco.
+
+**Resuelto** en `4bdc008`: la columna de mayor valor admite hasta 10 cuentas (no tiene dónde acarrear). Las inferiores siguen en 0-9 con acarreo. Tests de regresión en `Abacus.test.tsx` y `ExerciseRunner.test.tsx`.
+
 ---
 
 ## Producto
@@ -106,7 +126,7 @@ refactor posterior.
 
 **Estado actual:** `App.tsx` es una demo temporal ("Demo temporal task-12"). Solo ofrece `represent`, `identify` y `decompose`. `series` y `placement` existen en motor y runner pero no son accesibles. No hay sandboxes, tutorial ni Home.
 
-**Dirección:** implementar lo ya especificado en [task-15-home-navigation.md](task-15-home-navigation.md): navegación por estado (`home`, `sandbox`, `activities`, `activity-session`, `tutorial-abacus`), `Home.tsx` y `Navigation.tsx` en `src/components/layout/`. Los ejercicios `series` y `placement` deben quedar accesibles.
+**Dirección:** implementar lo ya especificado en [task-15-home-navigation.md](archive/task-15-home-navigation.md): navegación por estado (`home`, `sandbox`, `activities`, `activity-session`, `tutorial-abacus`), `Home.tsx` y `Navigation.tsx` en `src/components/layout/`. Los ejercicios `series` y `placement` deben quedar accesibles.
 
 **Decisiones abiertas (a confirmar antes de empezar):**
 - ¿Se conserva el selector de la demo como pantalla de desarrollo (por ejemplo bajo `?dev`) o se elimina?
@@ -115,6 +135,8 @@ refactor posterior.
 **Aceptación:** los criterios de la tarea 15; desde Home se llega a cada manipulativo en sandbox, a cada tipo de ejercicio, al tutorial del ábaco, y se puede volver. Actualizar el estado de la tarea 15 en `docs/roadmap.md`.
 
 **Alcance:** `src/App.tsx`, nuevos `layout/Home.tsx` y `layout/Navigation.tsx`, tests de navegación.
+
+**Resuelto** en `3fddd68`. Decisiones: la demo se conserva en `?dev`; `series` y `placement` son accesibles (Series desde Home, placement desde la recta numérica). Detalle y diferencias con la spec en [`archive/task-15-home-navigation.md`](archive/task-15-home-navigation.md).
 
 ### TENFRAME-01 — Interacción de rellenado
 
@@ -198,6 +220,8 @@ Propuesta: (a), porque mantiene el invariante "las fichas se colocan de izquierd
 
 **Aceptación:** los tests existentes pasan sin modificarse (salvo imports); `pnpm build` sin errores.
 
+**Estado parcial:** `ExerciseRunner` dividido en `6bd989f` (622 → 191 líneas; vistas en `src/components/activities/views/`, movimiento verificado línea a línea). Falta `NumberTiles.tsx`.
+
 ### TECH-02 — ESLint y Prettier
 
 **Problema:** el código referencia reglas de ESLint (`react-hooks/exhaustive-deps`) pero ESLint no está instalado. Hay formato inconsistente (por ejemplo, el `<select>` de manipulativo en `App.tsx`).
@@ -222,8 +246,8 @@ Propuesta: (a), porque mantiene el invariante "las fichas se colocan de izquierd
 
 ## Preguntas abiertas
 
-1. PROD-01: ¿se conserva la demo como pantalla de desarrollo?
-2. BUG-02: tras fallar en placement, ¿se permite reintentar o se bloquea la recta?
+1. ~~PROD-01: ¿se conserva la demo?~~ Resuelta: sí, en `?dev`.
+2. ~~BUG-02: ¿reintentar o bloquear tras fallar?~~ Resuelta: se reintenta.
 3. TENFRAME-01: ¿opción (a) o (b) al tocar una celda llena?
 4. PROD-02: ¿puntuación numérica o solo cualitativa?
 5. TECH-02 y UX-01: ¿se aceptan nuevas dependencias de desarrollo y `vite-plugin-pwa`?

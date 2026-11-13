@@ -1,6 +1,6 @@
 # Roadmap — mathlab
 
-> Índice centralizado de tareas e ideas. Actualizado: 2026-11-13.
+> Índice centralizado de tareas e ideas. Actualizado: 2026-11-13 (tras T15).
 
 Las tareas completadas tienen su documento de especificación en
 [`archive/`](archive/). El detalle de cada mejora pendiente (problema, dirección,
@@ -28,26 +28,22 @@ arquitectura en [`architecture.md`](architecture.md).
 - [x] T11 Ejercicios Representar e Identificar — [`archive/task-11-represent-identify.md`](archive/task-11-represent-identify.md)
 - [x] T12 Ejercicio de Descomposición — [`archive/task-12-decomposition.md`](archive/task-12-decomposition.md)
 
-## Fase 1 — Ejercicios restantes y ensamblaje
+## Fase 1 — Ejercicios restantes y ensamblaje ✓ completada
 
-Especificaciones activas (siguen en `docs/`).
+- [x] T13 Completar series — [`archive/task-13-series.md`](archive/task-13-series.md)
+- [x] T14 Posición en recta numérica — [`archive/task-14-number-line-placement.md`](archive/task-14-number-line-placement.md)
+- [x] T15 Home, navegación y ensamblaje — [`archive/task-15-home-navigation.md`](archive/task-15-home-navigation.md)
+  (ID de mejora: PROD-01). Pendiente de comprobar a ojo en navegador e iPad.
 
-- [~] T13 Completar series — [`task-13-series.md`](task-13-series.md).
-  Generador, validador y `SeriesView` implementados; falta demo accesible y test
-  end-to-end en `ExerciseRunner.test.tsx`.
-- [~] T14 Posición en recta numérica — [`task-14-number-line-placement.md`](task-14-number-line-placement.md).
-  Generador, validador, `PlacementView` y tests del runner implementados; falta
-  demo accesible. Ver BUG-02.
-- [ ] T15 Home, navegación y ensamblaje — [`task-15-home-navigation.md`](task-15-home-navigation.md)
-  (ID de mejora: PROD-01).
-
-## Fase 2 — Correcciones
+## Fase 2 — Correcciones ✓ completada
 
 Un commit por ID, con test de regresión.
 
-- [ ] BUG-01 Respuesta vacía en identify se valida como 0
-- [ ] BUG-02 La recta permite recolocar tras acertar 🔎
-- [ ] BUG-03 `ExerciseRunner` genera un ejercicio de más al montar
+- [x] BUG-01 Respuesta vacía en identify se valida como 0
+- [x] BUG-02 La recta permite recolocar tras acertar (tras fallar se puede reintentar)
+- [x] BUG-03 `ExerciseRunner` genera un ejercicio de más al montar
+- [x] BUG-04 El ábaco de una columna dibujaba el 10 como 0 (hallado al estabilizar un
+  test intermitente)
 
 ## Fase 3 — Mejoras de producto
 
@@ -59,7 +55,8 @@ Un commit por ID, con test de regresión.
 
 ## Fase 4 — Calidad y mantenimiento
 
-- [ ] TECH-01 Dividir `ExerciseRunner.tsx` y `NumberTiles.tsx`
+- [~] TECH-01 Dividir `ExerciseRunner.tsx` y `NumberTiles.tsx`. `ExerciseRunner`
+  hecho (622 → 191 líneas, vistas en `activities/views/`); falta `NumberTiles.tsx`
 - [ ] TECH-02 ESLint y Prettier (nuevas devDependencies: confirmar)
 - [ ] TECH-03 CI en pull requests + paso de typecheck
 
@@ -70,13 +67,22 @@ Un commit por ID, con test de regresión.
 - [ ] UX-01 Metadatos iPad y PWA (posible `vite-plugin-pwa`: confirmar)
 - [ ] UX-02 Refuerzo visual y sonoro (sonido apagado por defecto)
 - [ ] TECH-04 RNG inyectable en generadores
+- [ ] UX-03 Marcador verde con la posición correcta tras fallar en placement (estaba en
+  la spec de T14 y no se implementó)
+- [ ] UX-04 `NumberLine` responsive: ancho fijo de 500 px sin `viewBox`, y step fijo en
+  la actividad de placement
 
-## Decisiones abiertas
+## Decisiones
 
-Detalle y contexto en [`261113--analisis-mejoras.md`](261113--analisis-mejoras.md#preguntas-abiertas).
+Resueltas en la ronda del 2026-11-13 (ver
+[`261113--analisis-estado-proyecto.md`](261113--analisis-estado-proyecto.md#decisiones-tomadas-para-esta-ronda)).
+Son valores por defecto, reversibles; confirmar o cambiar.
 
-1. PROD-01: ¿se conserva la demo actual como pantalla de desarrollo?
-2. BUG-02: tras fallar en placement, ¿reintentar o bloquear la recta?
+1. PROD-01: la demo se conserva en `?dev`.
+2. BUG-02: tras fallar en placement se reintenta; tras acertar se bloquea.
+
+Abiertas:
+
 3. TENFRAME-01: al tocar una celda llena, ¿vaciar desde esa celda o quitar solo esa?
 4. PROD-02: ¿puntuación numérica o solo cualitativa?
 5. TECH-02 y UX-01: ¿se aceptan las nuevas dependencias?

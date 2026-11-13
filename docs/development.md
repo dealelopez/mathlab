@@ -17,6 +17,9 @@ pnpm dev        # http://localhost:5173/mathlab/
 
 `base` en `vite.config.ts` es `/mathlab/`, así que en local la app cuelga de esa ruta.
 
+Para probar una combinación concreta de ejercicio, manipulativo, nivel y modo sin pasar
+por la navegación, abrir `http://localhost:5173/mathlab/?dev`.
+
 ## Comandos
 
 ```bash

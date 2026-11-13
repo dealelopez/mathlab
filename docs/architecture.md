@@ -1,6 +1,6 @@
 # Arquitectura — mathlab
 
-> Última actualización: 2026-11-13. Estado de tareas y mejoras: [`roadmap.md`](roadmap.md).
+> Última actualización: 2026-11-13 (tras T15). Estado de tareas y mejoras: [`roadmap.md`](roadmap.md).
 
 ## Proyecto
 
@@ -99,7 +99,7 @@ mathlab/
 ├── src/
 │   ├── main.tsx                         # Monta <App /> en #root
 │   ├── index.css                        # @import "tailwindcss"
-│   ├── App.tsx                          # Navegación por estado + export default
+│   ├── App.tsx                          # Navegación por estado; `?dev` abre DevPage
 │   ├── types.ts                         # Tipos globales (Manipulative, ExerciseType, DifficultyLevel)
 │   ├── hooks/
 │   │   └── usePointerDrag.ts            # Hook unificado touch/mouse (Pointer Events)
@@ -131,16 +131,30 @@ mathlab/
 │   │   │   ├── Rekenrek.tsx             # N filas de BeadRow (5 rojo + 5 blanco)
 │   │   │   ├── Abacus.tsx               # N filas con valor posicional (U/D/C)
 │   │   │   ├── TenFrame.tsx             # Cuadrícula 2×5 con fichas
-│   │   │   └── NumberLine.tsx           # Recta numérica SVG interactiva
+│   │   │   ├── NumberLine.tsx           # Recta numérica SVG interactiva
+│   │   │   └── abacusColumns.ts         # Etiquetas U/D/C → columnas con color
 │   │   ├── activities/
 │   │   │   ├── ActivityShell.tsx         # Contenedor genérico (instrucción + contenido + feedback)
 │   │   │   ├── FeedbackBanner.tsx        # Banner correcto/incorrecto
-│   │   │   └── ExerciseRunner.tsx        # Conecta engine con UI (orquestador)
+│   │   │   ├── ExerciseRunner.tsx        # Conecta engine con UI (orquestador)
+│   │   │   └── views/                    # Una vista por tipo de ejercicio
+│   │   │       ├── ManipulativeView.tsx  # represent / identify (manipulativo desde el setup)
+│   │   │       ├── DecomposeView.tsx     # "N = ___ + ___" (tira de dígitos o huecos + opciones)
+│   │   │       ├── SeriesView.tsx        # "2, 4, 6, ___"
+│   │   │       ├── IdentifyFree.tsx      # un hueco por cifra + dígitos 0-9
+│   │   │       └── PlacementView.tsx     # "Coloca el N en la recta" (validación automática)
 │   │   ├── tutorial/
 │   │   │   └── AbacusTutorial.tsx        # Tutorial paso a paso del ábaco
-│   │   └── layout/                       # PENDIENTE (T15, ver roadmap)
-│   │       ├── Home.tsx                  # Pantalla principal
-│   │       └── Navigation.tsx            # Botón atrás + título
+│   │   └── layout/                       # Navegación y páginas (T15)
+│   │       ├── Home.tsx                  # Tarjetas: 4 manipulativos + Descomposición y Series
+│   │       ├── Navigation.tsx            # Botón "← Volver" + título
+│   │       ├── SandboxPage.tsx           # Exploración libre con controles por manipulativo
+│   │       ├── ActivitiesPage.tsx        # Elegir ejercicio, nivel y modo → "Empezar"
+│   │       ├── SessionPage.tsx           # ExerciseRunner + pantalla de fin de sesión
+│   │       ├── DevPage.tsx               # Selector libre (`?dev`)
+│   │       ├── OptionGroup.tsx           # Selector de botones (aria-pressed)
+│   │       ├── catalog.ts                # Etiquetas y ejercicios por manipulativo
+│   │       └── types.ts                  # Page, ActivityConfig
 │   └── lib/
 │       └── math.ts                      # Utilidades puras (randomInt, shuffle, etc.)
 ├── tests/
@@ -154,26 +168,23 @@ mathlab/
 │   │   │   ├── series.test.ts
 │   │   │   └── placement.test.ts
 │   │   └── validators/
+│   │       ├── exact.test.ts            # represent e identify
 │   │       ├── decompose.test.ts
 │   │       ├── series.test.ts
 │   │       └── placement.test.ts
-│   ├── components/
-│   │   ├── BeadRow.test.tsx
-│   │   ├── Rekenrek.test.tsx
-│   │   ├── Abacus.test.tsx
-│   │   ├── TenFrame.test.tsx
-│   │   ├── NumberLine.test.tsx
-│   │   └── ActivityShell.test.tsx
-│   └── lib/
-│       └── math.test.ts
+│   ├── components/                      # un test por componente (+ layout/)
+│   ├── hooks/
+│   │   └── usePointerDrag.test.tsx
+│   ├── lib/
+│   │   └── math.test.ts
+│   └── App.test.tsx                     # navegación de extremo a extremo
 └── docs/
     ├── roadmap.md                       # Índice de tareas e ideas
     ├── architecture.md                  ← este archivo
     ├── 00-contexto-y-requisitos.md
     ├── guia-deploy.md
-    ├── task-13..15-*.md                 # Especificaciones pendientes
     ├── AAMMDD--<slug>.md                # Documentos puntuales
-    └── archive/                         # Tareas 01-12 completadas
+    └── archive/                         # Tareas 01-15 completadas
 ```
 
 ---

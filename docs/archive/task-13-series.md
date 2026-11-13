@@ -119,3 +119,12 @@ Orden de validación:
 - [ ] Generación procedural produce series variadas (no siempre el mismo patrón/inicio)
 - [ ] Todos los tests pasan
 - [ ] Demo: serie "5, 10, 15, [___], [___]" con opciones. Completar → feedback. Generar otra serie. Cambiar dificultad
+
+---
+
+## Cierre (2026-11-13)
+
+Completada. La demo accesible llegó con la T15 (tarjeta "Series" en Home y, para
+desarrollo, `?dev`). Se añadieron los tests de extremo a extremo en
+`tests/components/ExerciseRunner.test.tsx` (bloque `series`): drag, libre, orden de las
+respuestas, aviso de huecos vacíos y paso al siguiente ejercicio.

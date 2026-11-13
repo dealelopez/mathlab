@@ -4,7 +4,10 @@
 
 ## Setup local
 
-Requisitos: Node 22 y pnpm 10 (son las versiones que usa el CI).
+Requisitos: Node 22 o superior. La versión de pnpm está fijada en el campo
+`packageManager` de `package.json` (pnpm 10, la misma que usa el CI); con
+Corepack o con pnpm ≥ 9.7 se selecciona sola. Con una instalación de pnpm 11
+sin ese campo, `pnpm test` y `pnpm build` abortan por `ERR_PNPM_IGNORED_BUILDS`.
 
 ```bash
 git clone git@github.com:dealelopez/mathlab.git && cd mathlab

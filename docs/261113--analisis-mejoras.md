@@ -112,7 +112,7 @@ refactor posterior.
 - ¿Se conserva el selector de la demo como pantalla de desarrollo (por ejemplo bajo `?dev`) o se elimina?
 - ¿Qué manipulativos admiten `series` y `placement`? (`series` no usa manipulativo; `placement` usa la recta.)
 
-**Aceptación:** los criterios de la tarea 15; desde Home se llega a cada manipulativo en sandbox, a cada tipo de ejercicio, al tutorial del ábaco, y se puede volver. Actualizar el estado de la tarea 15 en `docs/README.md`.
+**Aceptación:** los criterios de la tarea 15; desde Home se llega a cada manipulativo en sandbox, a cada tipo de ejercicio, al tutorial del ábaco, y se puede volver. Actualizar el estado de la tarea 15 en `docs/roadmap.md`.
 
 **Alcance:** `src/App.tsx`, nuevos `layout/Home.tsx` y `layout/Navigation.tsx`, tests de navegación.
 
@@ -234,5 +234,5 @@ Propuesta: (a), porque mantiene el invariante "las fichas se colocan de izquierd
 - [ ] `pnpm test` pasa (incluye tests nuevos de regresión).
 - [ ] `pnpm build` (`tsc -b && vite build`) sin errores.
 - [ ] Probado en navegador, y en iPad si el cambio afecta a toque o arrastre.
-- [ ] Documentación actualizada: estado en este backlog y, si procede, en `docs/README.md`.
+- [ ] Documentación actualizada: estado en este backlog y en `docs/roadmap.md`.
 - [ ] Commit local con el ID en el mensaje. Sin `git push`.

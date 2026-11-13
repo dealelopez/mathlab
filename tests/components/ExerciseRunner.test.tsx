@@ -92,6 +92,52 @@ describe('ExerciseRunner', () => {
     expect(container.querySelector('[data-testid="feedback-banner"]')).toBeInTheDocument();
   });
 
+  // Recta 0-10 (dificultad 2, tolerancia 0): 500 de ancho, PAD 40 → 42 px por unidad.
+  function clickLineAt(container: HTMLElement, value: number) {
+    fireEvent.click(container.querySelector('[data-testid="number-line"]')!, {
+      clientX: 40 + value * 42,
+    });
+  }
+
+  function placementTarget(container: HTMLElement): number {
+    return Number(
+      container.querySelector('[data-testid="activity-instruction"]')!.textContent!.match(/(\d+)/)![1],
+    );
+  }
+
+  function markerPosition(container: HTMLElement): string | null {
+    return (
+      container.querySelector('[data-testid="numberline-marker"]')?.getAttribute('data-position') ??
+      null
+    );
+  }
+
+  it('BUG-02 placement: tras acertar, tocar otra posición no cambia marcador ni feedback', () => {
+    const { container } = render(<ExerciseRunner exerciseType="placement" difficulty={2} />);
+    const target = placementTarget(container);
+    const other = target === 0 ? 1 : 0;
+    clickLineAt(container, target);
+    expect(correctBanner(container)).toBeInTheDocument();
+    expect(markerPosition(container)).toBe(String(target));
+
+    clickLineAt(container, other);
+    expect(correctBanner(container)).toBeInTheDocument();
+    expect(incorrectBanner(container)).not.toBeInTheDocument();
+    expect(markerPosition(container)).toBe(String(target));
+  });
+
+  it('BUG-02 placement: tras fallar, se puede reintentar y acertar', () => {
+    const { container } = render(<ExerciseRunner exerciseType="placement" difficulty={2} />);
+    const target = placementTarget(container);
+    const wrong = target === 0 ? 1 : 0;
+    clickLineAt(container, wrong);
+    expect(incorrectBanner(container)).toBeInTheDocument();
+
+    clickLineAt(container, target);
+    expect(correctBanner(container)).toBeInTheDocument();
+    expect(markerPosition(container)).toBe(String(target));
+  });
+
   it('tras 2 ejercicios con exerciseCount=2, Siguiente llama onComplete', () => {
     const onComplete = vi.fn();
     const { container } = render(

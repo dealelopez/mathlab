@@ -442,10 +442,13 @@ function IdentifyFree({
 /** "Coloca el N en la recta": validación automática al colocar. */
 function PlacementView({
   exercise,
+  locked,
   onAnswer,
   onAutoCheck,
 }: {
   exercise: Exercise;
+  /** true tras acertar: la recta deja de aceptar toques. Tras fallar se puede reintentar. */
+  locked: boolean;
   onAnswer: (a: Answer) => void;
   onAutoCheck: (a: Answer) => void;
 }) {
@@ -458,6 +461,7 @@ function PlacementView({
       max={hi}
       showNumbers={exercise.setup.visibleNumbers ?? true}
       interactive="place"
+      readOnly={locked}
       markers={pos === null ? [] : [{ position: pos, color: '#EF4444', label: String(pos) }]}
       onPlaceMarker={(p) => {
         setPos(p);
@@ -610,6 +614,7 @@ export default function ExerciseRunner({
           <PlacementView
             key={current.id}
             exercise={current}
+            locked={feedback === 'correct'}
             onAnswer={handleAnswer}
             onAutoCheck={(a) => check(a)}
           />

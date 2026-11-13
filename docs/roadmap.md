@@ -92,6 +92,10 @@ TECH-04 (RNG inyectable: cambio transversal en generadores).
 - [ ] UX-01 Metadatos iPad y PWA (posible `vite-plugin-pwa`: confirmar)
 - [ ] UX-02 Refuerzo visual y sonoro (sonido apagado por defecto)
 - [ ] TECH-04 RNG inyectable en generadores
+- [ ] IDEA-01 Operaciones y estrategias de resolución inspiradas en Innovamat (saltos en la
+  recta, completar hasta 10, etc.). Propuesta, sin spec:
+  [`261113--propuesta-estrategias-innovamat.md`](261113--propuesta-estrategias-innovamat.md).
+  Antes hay que decidir si mathlab incorpora suma y resta.
 - [ ] UX-03 Marcador verde con la posición correcta tras fallar en placement (estaba en
   la spec de T14 y no se implementó). **Choca con la regla «no mostrar el resultado de
   los ejercicios» (BUG-05).** No implementar sin que el usuario lo confirme.
@@ -115,3 +119,4 @@ Abiertas:
 4. PROD-02: ¿puntuación numérica o solo cualitativa? (la spec T19 implementa estrellas).
 5. TECH-02 y UX-01: ¿se aceptan las nuevas dependencias?
 6. UX-03: ¿se permite mostrar la posición correcta tras fallar en placement?
+7. IDEA-01: ¿se añaden operaciones (suma y resta)? Ver las decisiones de la propuesta.

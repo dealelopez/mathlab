@@ -38,6 +38,8 @@
 | Guía | Documento |
 |------|-----------|
 | Deploy (GitHub Pages) | [guia-deploy.md](guia-deploy.md) |
+| Backlog de mejoras (análisis 2026-11-13) | [backlog-mejoras.md](backlog-mejoras.md) |
+| Mejoras menores de UX | [mejoras-futuras.md](mejoras-futuras.md) |
 
 ---
 

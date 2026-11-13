@@ -1,5 +1,8 @@
 # Mejoras futuras (menores)
 
+> El plan global de mejoras (con prioridades y orden) está en
+> [backlog-mejoras.md](backlog-mejoras.md). TENFRAME-01 figura allí también.
+
 Lista de fricciones detectadas probando la app. No son bugs (el comportamiento
 actual es el especificado), sino UX a corregir más adelante.
 

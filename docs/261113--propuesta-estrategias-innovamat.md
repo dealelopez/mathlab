@@ -187,19 +187,25 @@ al niño.
 | 5 | **P9** dimensión de apoyo | Necesita validación; mejor con P1 ya hecho para ver el efecto |
 | 6 | **P4**, **P7**, **P8** | Más interacción nueva o decisión adicional |
 
-## 6. Decisiones que necesito de ti
+## 6. Decisiones del usuario (2026-11-13)
 
-1. **¿Se añaden operaciones (suma y resta) a mathlab?** Hoy no hay. P1, P2, P4, P5, P6 y
-   P7 dependen de eso; P3 y P8 no.
-2. **Edad objetivo de las operaciones.** Innovamat las introduce a los 6-7 años. ¿Se
-   ofrecen a todos o solo a partir de cierto nivel?
-3. **Velocidad.** Innovamat defiende automatizar sumas de un dígito, pero para 3-8 años
-   el cronómetro puede generar presión. ¿Se mide el tiempo o solo se practica?
-4. **P9 (apoyo que se desvanece).** ¿Se trata como una tarea de diseño pedagógico con
-   alguien que conozca al niño, igual que la dificultad adaptativa (PROD-04)?
+1. **¿Se añaden operaciones (suma y resta)?** Sí.
+2. **Edad objetivo de las operaciones:** 6-7 años. Los rangos de las especificaciones
+   (10, 20, 50, 100) salen de ahí.
+3. **Velocidad:** se mide el tiempo, «pero ya veremos qué hacemos». Se registra sin
+   mostrarlo ni usarlo (T25).
+4. **Idea de interés:** mostrar una suma o resta y una recta en la que el niño descompone
+   la operación en los saltos que quiera hasta llegar al resultado. Es P1.
+5. **P9 (apoyo que se desvanece):** sigue pendiente de validar con quien conozca al niño.
+   Una versión mínima ya va dentro de T23: el nivel 3 retira los números de la recta.
 
-## 7. Qué haría falta para pasar a especificaciones
+## 7. Especificaciones creadas
 
-Con las decisiones 1 y 2 resueltas, preparo especificaciones ejecutables (formato de
-`docs/task-NN-*.md`) para P3 y P1, que son las que se pueden empezar ya. No he creado
-ninguna: dependen de tu respuesta.
+| Spec | Propuesta | Contenido |
+|---|---|---|
+| [`task-23-sumas-restas-saltos.md`](task-23-sumas-restas-saltos.md) | P1 | Sumas y restas con saltos sobre la recta (3 subtareas) |
+| [`task-24-completar-hasta-10.md`](task-24-completar-hasta-10.md) | P3 | Completar hasta 10 y 20 con el marco de diez |
+| [`task-25-medir-tiempo.md`](task-25-medir-tiempo.md) | decisión 3 | Registrar el tiempo por ejercicio (requiere T19) |
+
+P2 (resta como distancia), P5 (estimar), P6 (comprobar con otra representación) y las
+demás quedan sin spec hasta ver cómo funciona P1 con un niño.

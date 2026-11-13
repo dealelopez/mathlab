@@ -51,11 +51,13 @@ Un commit por ID, con test de regresión.
 
 ## Siguientes tareas (listas para ejecutar)
 
-Cada una tiene una especificación autocontenida. Orden recomendado (de menos a más
-riesgo). Una tarea por sesión, un commit por tarea.
+Cada una tiene una especificación autocontenida. Orden recomendado: las dos marcadas con 0 son
+las que el usuario quiere primero; el resto, de menos a más riesgo. Una tarea por sesión, un commit por tarea.
 
 | Orden | Spec | ID | Esfuerzo | Notas |
 |---|---|---|---|---|
+| 0 | [`task-23-sumas-restas-saltos.md`](task-23-sumas-restas-saltos.md) | IDEA-01 (P1) | L | **Prioridad del usuario.** Tres subtareas (A, B, C) |
+| 0 | [`task-24-completar-hasta-10.md`](task-24-completar-hasta-10.md) | IDEA-01 (P3) | M | Independiente de las demás |
 | 1 | [`task-16-tenframe-rellenado.md`](task-16-tenframe-rellenado.md) | TENFRAME-01 | S | Decisión (a)/(b) propuesta: (a) |
 | 2 | [`task-17-numberline-responsive.md`](task-17-numberline-responsive.md) | UX-04 | S | Solo escalado; el `step` queda fuera |
 | 3 | [`task-22-ci-pull-requests.md`](task-22-ci-pull-requests.md) | TECH-03 | S | No verificable en local |
@@ -63,6 +65,7 @@ riesgo). Una tarea por sesión, un commit por tarea.
 | 5 | [`task-19-resumen-sesion.md`](task-19-resumen-sesion.md) | PROD-02 | M | Decisión: cualitativa con estrellas |
 | 6 | [`task-20-persistencia-local.md`](task-20-persistencia-local.md) | PROD-03 | S | Mejor tras la 5 |
 | 7 | [`task-21-accesibilidad-teclado.md`](task-21-accesibilidad-teclado.md) | A11Y-01 | M | Tres subtareas (A, B, C) |
+| 8 | [`task-25-medir-tiempo.md`](task-25-medir-tiempo.md) | IDEA-01 (tiempo) | S | **Requiere T19.** Solo registra, no muestra |
 
 **Sin especificación, a propósito** (necesitan una decisión del usuario o un modelo más
 capaz): TECH-02 (ESLint/Prettier: dependencias nuevas), UX-01 (PWA: posible dependencia),
@@ -92,10 +95,10 @@ TECH-04 (RNG inyectable: cambio transversal en generadores).
 - [ ] UX-01 Metadatos iPad y PWA (posible `vite-plugin-pwa`: confirmar)
 - [ ] UX-02 Refuerzo visual y sonoro (sonido apagado por defecto)
 - [ ] TECH-04 RNG inyectable en generadores
-- [ ] IDEA-01 Operaciones y estrategias de resolución inspiradas en Innovamat (saltos en la
-  recta, completar hasta 10, etc.). Propuesta, sin spec:
+- [~] IDEA-01 Operaciones y estrategias de resolución inspiradas en Innovamat. Decidido:
+  se añaden suma y resta, para 6-7 años, y se mide el tiempo sin mostrarlo. Propuesta:
   [`261113--propuesta-estrategias-innovamat.md`](261113--propuesta-estrategias-innovamat.md).
-  Antes hay que decidir si mathlab incorpora suma y resta.
+  Specs listas: T23 (saltos), T24 (completar hasta 10), T25 (tiempo).
 - [ ] UX-03 Marcador verde con la posición correcta tras fallar en placement (estaba en
   la spec de T14 y no se implementó). **Choca con la regla «no mostrar el resultado de
   los ejercicios» (BUG-05).** No implementar sin que el usuario lo confirme.
@@ -119,4 +122,5 @@ Abiertas:
 4. PROD-02: ¿puntuación numérica o solo cualitativa? (la spec T19 implementa estrellas).
 5. TECH-02 y UX-01: ¿se aceptan las nuevas dependencias?
 6. UX-03: ¿se permite mostrar la posición correcta tras fallar en placement?
-7. IDEA-01: ¿se añaden operaciones (suma y resta)? Ver las decisiones de la propuesta.
+7. IDEA-01: resuelta (sí, 6-7 años, tiempo medido). Queda abierto qué hacer con el tiempo
+   (ver T25) y P9 (apoyo que se desvanece).

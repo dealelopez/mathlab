@@ -84,7 +84,9 @@ GitHub Pages, sin backend.
   `packageManager` en `package.json` (pnpm 10).
 - Pendiente de comprobar a ojo en navegador e iPad: el diseño de Home, sandboxes y
   actividades solo está cubierto por tests y build.
-- Siguiente: `docs/roadmap.md`, sección «Siguientes tareas» (T16-T22, con spec cada
-  una). Las decisiones abiertas están al final del roadmap.
+- Siguiente: `docs/roadmap.md`, sección «Siguientes tareas» (T16-T25, con spec cada
+  una; T23 y T24, las operaciones, son la prioridad del usuario). Las decisiones abiertas están al final del roadmap.
 - Regla de producto: **no mostrar el resultado de los ejercicios** en pantalla (BUG-05).
+- Decisión: mathlab añadirá suma y resta (6-7 años) con saltos sobre la recta (T23). El
+  tiempo por ejercicio se registra pero no se muestra (T25).
 - Análisis y resultados de la última ronda: `docs/261113--analisis-estado-proyecto.md`.

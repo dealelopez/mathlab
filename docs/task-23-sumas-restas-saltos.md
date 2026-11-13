@@ -71,15 +71,18 @@ decomposeParts: 2, seriesPatterns: []`; no poner `validManipulatives`).
 | 1 | `[2, 10]` | hasta 10 | todos | cada 1 | 1 2 3 4 5 |
 | 2 | `[2, 20]` | hasta 20 | todos | cada 1 | 1 2 3 4 5 10 |
 | 3 (medio) | `[21, 100]` | hasta 100 | cada 10 | cada 5 | 1 2 3 4 5 10 20 30 40 50 |
-| 4 | `[101, 300]` | **más de 100** | cada 50 | cada 10 | 1 2 3 4 5 10 20 30 40 50 100 |
-| 5 | `[101, 1000]` | hasta 1000, **recta vacía** | ninguno | cada 50 | 1 2 5 10 20 50 100 200 |
+| 4 | `[101, 200]` | **más de 100**, hasta 200 | cada 50 | cada 10 | 1 2 3 4 5 10 20 30 40 50 100 |
+| 5 | `[101, 300]` | hasta 300, **recta vacía** | ninguno | cada 50 | 1 2 5 10 20 50 100 |
 
-**Nivel 5 (criterio mío).** Combina el mayor rango con el menor apoyo: la recta no
-lleva ningún número (la «recta numérica vacía» con la que Innovamat cierra el recorrido
-del collar de bolas). El niño solo ve el número de partida y las etiquetas de sus propios
-saltos, así que debe llevar la cuenta mentalmente. Añade saltos de 100 y 200 y quita los
-pequeños intermedios (3, 4, 30, 40) para que tenga que descomponer. Es el nivel más duro:
-no hace falta que lo supere un niño de 6-7 años.
+**Nivel 5 (criterio mío; el usuario pidió limitarlo a 250-300 y se eligió 300).** Combina
+el mayor rango con el menor apoyo: la recta no lleva ningún número (la «recta numérica
+vacía» con la que Innovamat cierra el recorrido del collar de bolas). El niño solo ve el
+número de partida y las etiquetas de sus propios saltos, así que debe llevar la cuenta
+mentalmente. Quita los saltos pequeños intermedios (3, 4, 30, 40) para que tenga que
+descomponer. Es el nivel más duro: no hace falta que lo supere un niño de 6-7 años. El nivel
+4 queda en 200 para que los dos niveles sigan siendo escalones distintos; si se prefiere
+250 en el nivel 5, basta cambiar `[101, 300]` por `[101, 250]` (la ventana sigue siendo
+`[0|100, 300]`).
 
 Los niveles 3-5 ofrecen saltos de unidades, decenas y centenas: **descomponer por valor
 posicional** (`48 + 28` = `+20 +8`, o `+20 +5 +3`) es la otra estrategia de Innovamat.
@@ -109,9 +112,9 @@ Con `[lo, hi] = config.numberRange`:
 | 3 | `[0, 100]` |
 | 4 y 5 | `[Math.floor(low / 100) * 100, Math.ceil(high / 100) * 100]` |
 
-(Ejemplo nivel 4: `128 + 57 = 185` → `[100, 200]`; `187 + 68 = 255` → `[100, 300]`.) Una
-ventana pequeña mantiene los arcos visibles; con una recta de 0 a 1000 un salto de 5 mediría
-2 px. Si por algún caso `high` fuese múltiplo de 100 y coincidiera con `low`, sumar 100 al
+(Ejemplos: nivel 4, `128 + 57 = 185` → `[100, 200]` y `87 + 98 = 185` → `[0, 200]`; nivel 5,
+`187 + 68 = 255` → `[100, 300]`.) Una ventana ajustada mantiene los arcos visibles; con una
+recta de 0 a 1000 un salto de 5 mediría 2 px. Si por algún caso `high` fuese múltiplo de 100 y coincidiera con `low`, sumar 100 al
 extremo superior.
 
 `setup` (campos nuevos en `ExerciseSetup`: `operands?: [number, number]`, `jumpSizes?:
@@ -124,8 +127,10 @@ number[]`, `numberLineStep?: number`; se reutilizan `numberLineRange` y `visible
   nivel 3, `visibleNumbersFor(lo, hi)` (de `generators/placement.ts`: da cada 10 y los
   extremos); nivel 4, los múltiplos de 50 dentro de la ventana más sus dos extremos;
   nivel 5, `[]` (ningún número).
-- `jumpSizes`: la lista de la tabla de A2, filtrada con `.filter((s) => s < hi - lo)`
-  (`lo`/`hi` de la ventana; en el nivel 1 el 10 no cabe, así que queda `[1,2,3,4,5]`).
+- `jumpSizes`: la lista de la tabla de A2, **tal cual, sin filtrar** (el nivel 1 ya no
+  incluye el 10). No depende de la ventana: la vista desactiva los botones que se saldrían
+  de la recta (B2). Así, por ejemplo, el salto de 100 existe siempre en los niveles 4 y 5,
+  aunque en una ventana `[100, 200]` casi nunca se pueda usar.
 
 Resto del ejercicio:
 - `correctAnswer`: el resultado. `answerMode: 'free'`. `manipulative: 'numberline'`.
@@ -165,15 +170,16 @@ Reglas, en este orden:
   - **Resta:** `m - b === correctAnswer`, `b ≥ 1`, `correctAnswer ≥ 1`, y `m` dentro de
     `numberRange`.
   - **Niveles pedidos por el usuario:** en el nivel 3, el resultado (o minuendo) nunca
-    supera 100 y el mínimo observado es > 20; en los niveles 4 y 5 **siempre es > 100**; el
-    nivel 5 alcanza valores > 300 en alguna muestra.
+    supera 100 y el mínimo observado es > 20; en el nivel 4 **siempre es > 100** y nunca
+    supera 200; en el nivel 5 **siempre es > 100**, nunca supera 300 y alguna muestra pasa de
+    200 (así los dos niveles son distintos).
   - **Ventana:** niveles 1-3 son `[0,10]`, `[0,20]`, `[0,100]`; en 4-5 los extremos son
     múltiplos de 100, `lo < hi`, y la ventana contiene `start` y `end`.
   - `numberLineStep` 1, 1, 5, 10, 50 según nivel, y los extremos de la ventana son múltiplos.
   - `visibleNumbers`: niveles 1-2, todos los de la ventana; nivel 3, múltiplos de 10 y
     extremos; nivel 4, múltiplos de 50 y extremos; nivel 5, lista vacía.
-  - `jumpSizes`: nivel 1 es `[1,2,3,4,5]` (sin 10), nivel 2 contiene 10, nivel 4 contiene 100,
-    nivel 5 contiene 200; todos menores que el ancho de la ventana.
+  - `jumpSizes` es exactamente la lista de la tabla de A2 en cada nivel (nivel 1 sin 10,
+    nivel 4 con 100, nivel 5 con 100 y sin 3, 4, 30 ni 40), en todas las muestras.
   - `instruction` contiene los operandos y **no** el resultado como número aislado
     (`!new RegExp(`\\b${result}\\b`).test(instruction)`; saltar la comprobación si el resultado
     coincide con algún operando, p. ej. `8 − 4 = 4`).

@@ -86,8 +86,8 @@ validación de decompose (cualquier combinación válida).
 
 **Andamiaje que desaparece (idea 3):** los niveles retiran apoyo a medida que crece el rango.
 Nivel 1 hasta 10, nivel 2 hasta 20 (ambos con todos los números en la recta), nivel 3 «medio»
-hasta 100 (números cada 10), nivel 4 con sumas de **más de 100** (números cada 50) y nivel 5
-hasta 1000 en **recta vacía**, sin ningún número. Los tres últimos añaden saltos de decenas
+hasta 100 (números cada 10), nivel 4 con sumas de **más de 100**, hasta 200 (números cada 50) y nivel 5
+hasta 300 en **recta vacía**, sin ningún número. Los tres últimos añaden saltos de decenas
 y centenas, que es la descomposición por valor posicional de Innovamat. Detalle en
 [`task-23-sumas-restas-saltos.md`](task-23-sumas-restas-saltos.md#a2-dificultad-srcenginedifficultyts).
 
@@ -200,7 +200,7 @@ al niño.
 4. **Idea de interés:** mostrar una suma o resta y una recta en la que el niño descompone
    la operación en los saltos que quiera hasta llegar al resultado. Es P1.
 5. **Niveles de las sumas:** nivel 3 «medio» hasta 100, nivel 4 de más de 100, nivel 5 a
-   criterio mío (hasta 1000 en recta vacía). Ver T23.
+   criterio mío (hasta 300 en recta vacía; el usuario pidió limitarlo a 250-300). Ver T23.
 6. **P9 (apoyo que se desvanece):** sigue pendiente de validar con quien conozca al niño.
    Una versión mínima ya va dentro de T23: el nivel 3 retira los números de la recta.
 

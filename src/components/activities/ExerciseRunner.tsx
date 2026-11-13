@@ -528,6 +528,13 @@ export default function ExerciseRunner({
         return;
       }
     }
+    // identify sin respuesta: avisar en vez de validar un 0 inventado.
+    // En represent el 0 es una respuesta legítima (el manipulativo a cero).
+    if (current.type === 'identify' && userAnswer === null) {
+      setFeedback('incorrect');
+      setFeedbackMessage('Escribe tu respuesta para comprobar');
+      return;
+    }
     check((userAnswer ?? 0) as Answer);
   };
 

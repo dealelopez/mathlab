@@ -1,6 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, fireEvent } from '@testing-library/react';
 import ExerciseRunner from '../../src/components/activities/ExerciseRunner';
+import { ExerciseEngine } from '../../src/engine/engine';
 
 function checkBtn(container: HTMLElement): HTMLButtonElement {
   return Array.from(container.querySelectorAll('button')).find(
@@ -220,6 +221,53 @@ describe('ExerciseRunner', () => {
     const shown = Number(getByTestId('rekenrek-total').textContent!.match(/Total: (\d+)/)![1]);
     answerIdentify(container, shown + 1);
     expect(incorrectBanner(container)).toBeInTheDocument();
+  });
+
+  it('BUG-01 identify libre: comprobar sin responder avisa y no llama al validador', () => {
+    const validate = vi.spyOn(ExerciseEngine.prototype, 'validate');
+    try {
+      const { container } = render(
+        <ExerciseRunner exerciseType="identify" difficulty={1} manipulative="rekenrek" />,
+      );
+      fireEvent.click(checkBtn(container));
+      expect(validate).not.toHaveBeenCalled();
+      const banner = container.querySelector('[data-testid="feedback-banner"]')!;
+      expect(banner.textContent).toContain('Escribe tu respuesta');
+    } finally {
+      validate.mockRestore();
+    }
+  });
+
+  it('BUG-01 identify con opciones: comprobar sin responder avisa y no valida', () => {
+    const validate = vi.spyOn(ExerciseEngine.prototype, 'validate');
+    try {
+      const { container } = render(
+        <ExerciseRunner
+          exerciseType="identify"
+          difficulty={2}
+          manipulative="rekenrek"
+          answerMode="drag"
+        />,
+      );
+      fireEvent.click(checkBtn(container));
+      expect(validate).not.toHaveBeenCalled();
+      expect(container.querySelector('[data-testid="feedback-banner"]')!.textContent).toContain(
+        'Escribe tu respuesta',
+      );
+    } finally {
+      validate.mockRestore();
+    }
+  });
+
+  it('BUG-01 identify: tras avisar, una respuesta válida se valida con normalidad', () => {
+    const { container, getByTestId } = render(
+      <ExerciseRunner exerciseType="identify" difficulty={1} manipulative="rekenrek" />,
+    );
+    const shown = Number(getByTestId('rekenrek-total').textContent!.match(/Total: (\d+)/)![1]);
+    fireEvent.click(checkBtn(container));
+    fillIdentify(container, shown);
+    fireEvent.click(checkBtn(container));
+    expect(correctBanner(container)).toBeInTheDocument();
   });
 
   it('identify: tocar un hueco lleno lo vacía (sin 0 atascado)', () => {

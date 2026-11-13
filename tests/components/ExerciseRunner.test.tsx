@@ -2,6 +2,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { render, fireEvent } from '@testing-library/react';
 import ExerciseRunner from '../../src/components/activities/ExerciseRunner';
 import { ExerciseEngine } from '../../src/engine/engine';
+import type { Exercise } from '../../src/engine/types';
 
 function checkBtn(container: HTMLElement): HTMLButtonElement {
   return Array.from(container.querySelectorAll('button')).find(
@@ -862,5 +863,112 @@ describe('ExerciseRunner', () => {
     );
     fireEvent.click(checkBtn(container));
     expect(correctBanner(container)).toBeInTheDocument();
+  });
+  describe('series', () => {
+    /** Renderiza una sesión de series y devuelve también el ejercicio generado. */
+    function renderSeries(difficulty: 1 | 2 | 3 | 4 | 5, answerMode: 'drag' | 'free') {
+      const generate = vi.spyOn(ExerciseEngine.prototype, 'generate');
+      const utils = render(
+        <ExerciseRunner exerciseType="series" difficulty={difficulty} answerMode={answerMode} />,
+      );
+      const exercise = generate.mock.results[generate.mock.results.length - 1]!.value as Exercise;
+      generate.mockRestore();
+      return { ...utils, exercise, expected: exercise.correctAnswer as number[] };
+    }
+
+    function dragValueToSlot(container: HTMLElement, value: number, slotIndex: number) {
+      const chip = chipValues(container).find((c) => Number(c.textContent) === value)!;
+      dragChipToSlot(
+        container,
+        chip,
+        container.querySelector(`[data-slot-id="sslot-${slotIndex}"]`)! as HTMLElement,
+      );
+    }
+
+    function typeIntoSlot(container: HTMLElement, slotIndex: number, value: number) {
+      fireEvent.click(container.querySelectorAll('[data-testid="answer-slot"]')[slotIndex]!);
+      String(value)
+        .split('')
+        .forEach((d) => fireEvent.click(container.querySelector(`[data-testid="numpad-${d}"]`)!));
+      fireEvent.click(container.querySelector('[data-testid="numpad-confirm"]')!);
+    }
+
+    it('drag: muestra los valores visibles como texto, los huecos y las opciones', () => {
+      const { container, exercise, expected, getByTestId } = renderSeries(3, 'drag');
+      expect(getByTestId('activity-instruction')).toHaveTextContent('Completa la serie');
+      const visible = (exercise.setup.visibleValues ?? []).filter((v) => v !== null);
+      expect(visible.length).toBeGreaterThanOrEqual(3);
+      for (const v of visible) expect(container.textContent).toContain(String(v));
+      expect(container.querySelectorAll('[data-slot-id^="sslot-"]')).toHaveLength(expected.length);
+      expect(chipValues(container).length).toBeGreaterThan(expected.length);
+    });
+
+    it('drag: valores correctos en orden → feedback correct', () => {
+      const { container, expected } = renderSeries(3, 'drag');
+      expected.forEach((v, i) => dragValueToSlot(container, v, i));
+      fireEvent.click(checkBtn(container));
+      expect(correctBanner(container)).toBeInTheDocument();
+    });
+
+    it('drag: un valor que no es de la serie → feedback incorrect', () => {
+      const { container, expected, exercise } = renderSeries(3, 'drag');
+      const wrong = (exercise.setup.options ?? []).find((o) => !expected.includes(o))!;
+      expected.forEach((v, i) => dragValueToSlot(container, i === 0 ? wrong : v, i));
+      fireEvent.click(checkBtn(container));
+      expect(incorrectBanner(container)).toBeInTheDocument();
+    });
+
+    it('drag: el orden importa (valores correctos intercambiados → incorrect)', () => {
+      const { container, expected } = renderSeries(5, 'drag');
+      expect(expected.length).toBeGreaterThanOrEqual(2);
+      const swapped = [expected[1]!, expected[0]!, ...expected.slice(2)];
+      swapped.forEach((v, i) => dragValueToSlot(container, v, i));
+      fireEvent.click(checkBtn(container));
+      expect(incorrectBanner(container)).toBeInTheDocument();
+    });
+
+    it('comprobar con algún hueco vacío avisa sin validar', () => {
+      const { container } = renderSeries(3, 'drag');
+      const validate = vi.spyOn(ExerciseEngine.prototype, 'validate');
+      try {
+        fireEvent.click(checkBtn(container));
+        expect(validate).not.toHaveBeenCalled();
+        expect(container.querySelector('[data-testid="feedback-banner"]')!.textContent).toContain(
+          'Rellena todos los huecos',
+        );
+      } finally {
+        validate.mockRestore();
+      }
+    });
+
+    it('free: escribir los valores con el teclado numérico → correct', () => {
+      const { container, expected } = renderSeries(3, 'free');
+      expect(container.querySelectorAll('[data-testid="answer-slot"]')).toHaveLength(expected.length);
+      expected.forEach((v, i) => typeIntoSlot(container, i, v));
+      fireEvent.click(checkBtn(container));
+      expect(correctBanner(container)).toBeInTheDocument();
+    });
+
+    it('free: un valor incorrecto → incorrect', () => {
+      const { container, expected } = renderSeries(3, 'free');
+      expected.forEach((v, i) => typeIntoSlot(container, i, i === 0 ? v + 1 : v));
+      fireEvent.click(checkBtn(container));
+      expect(incorrectBanner(container)).toBeInTheDocument();
+    });
+
+    it('tras acertar y pulsar Siguiente, aparece una serie nueva sin respuestas', () => {
+      const { container, expected, getByTestId } = renderSeries(3, 'drag');
+      expected.forEach((v, i) => dragValueToSlot(container, v, i));
+      fireEvent.click(checkBtn(container));
+      fireEvent.click(
+        Array.from(container.querySelectorAll('button')).find((b) =>
+          b.textContent?.startsWith('Siguiente'),
+        )!,
+      );
+      expect(getByTestId('activity-progress')).toHaveTextContent('2 / 10');
+      expect(container.querySelector('[data-testid="feedback-banner"]')).not.toBeInTheDocument();
+      const slots = Array.from(container.querySelectorAll('[data-slot-id^="sslot-"]'));
+      expect(slots.every((sl) => sl.textContent === '?')).toBe(true);
+    });
   });
 });

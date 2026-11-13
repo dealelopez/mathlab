@@ -1,5 +1,9 @@
 import { describe, it, expect } from 'vitest';
-import { DIFFICULTY_MAP, getDifficultyConfig } from '../../src/engine/difficulty';
+import {
+  DIFFICULTY_MAP,
+  getAvailableLevels,
+  getDifficultyConfig,
+} from '../../src/engine/difficulty';
 
 const EXERCISE_TYPES = ['represent', 'identify', 'decompose', 'series', 'placement'] as const;
 const DIFFICULTY_LEVELS = [1, 2, 3, 4, 5] as const;
@@ -93,5 +97,34 @@ describe('getDifficultyConfig', () => {
   it('devuelve la configuración correcta', () => {
     const config = getDifficultyConfig('represent', 3);
     expect(config.numberRange).toEqual([1, 20]);
+  });
+});
+
+describe('getAvailableLevels', () => {
+  it('sin manipulativo devuelve los 5 niveles', () => {
+    expect(getAvailableLevels('represent')).toEqual([1, 2, 3, 4, 5]);
+  });
+
+  it('tipos que no usan manipulativo devuelven los 5 niveles', () => {
+    for (const type of ['decompose', 'series', 'placement'] as const) {
+      expect(getAvailableLevels(type, 'numberline')).toEqual([1, 2, 3, 4, 5]);
+    }
+  });
+
+  it('rekenrek y marco de diez solo llegan al nivel 3 (rango máximo 20)', () => {
+    for (const m of ['rekenrek', 'tenframe'] as const) {
+      expect(getAvailableLevels('represent', m)).toEqual([1, 2, 3]);
+      expect(getAvailableLevels('identify', m)).toEqual([1, 2, 3]);
+    }
+  });
+
+  it('el ábaco admite los 5 niveles en represent e identify', () => {
+    expect(getAvailableLevels('represent', 'abacus')).toEqual([1, 2, 3, 4, 5]);
+    expect(getAvailableLevels('identify', 'abacus')).toEqual([1, 2, 3, 4, 5]);
+  });
+
+  it('la recta numérica admite identify (5 niveles) pero no represent', () => {
+    expect(getAvailableLevels('identify', 'numberline')).toEqual([1, 2, 3, 4, 5]);
+    expect(getAvailableLevels('represent', 'numberline')).toEqual([]);
   });
 });

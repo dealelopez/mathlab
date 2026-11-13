@@ -10,7 +10,8 @@ import { ExerciseEngine } from '../../engine/engine';
 import { visibleNumbersFor } from '../../engine/generators/placement';
 import ActivityShell from './ActivityShell';
 import Rekenrek from '../manipulatives/Rekenrek';
-import Abacus, { type AbacusColumn } from '../manipulatives/Abacus';
+import Abacus from '../manipulatives/Abacus';
+import { toAbacusColumns } from '../manipulatives/abacusColumns';
 import TenFrame from '../manipulatives/TenFrame';
 import NumberLine from '../manipulatives/NumberLine';
 import AnswerSlot from '../primitives/AnswerSlot';
@@ -34,21 +35,11 @@ export interface ExerciseRunnerProps {
   onBack?: () => void;
 }
 
-const COLUMN_COLORS: Record<string, string> = {
-  C: '#3B82F6',
-  D: '#10B981',
-  U: '#EF4444',
-};
-
 interface ManipulativeConfig {
   rekenrekRows?: number;
   abacusColumns?: string[];
   tenFrameCount?: number;
   numberLineRange?: [number, number];
-}
-
-function toAbacusColumns(labels: string[]): AbacusColumn[] {
-  return labels.map((label) => ({ label, color: COLUMN_COLORS[label] ?? '#6366F1' }));
 }
 
 /** Renderiza el manipulativo de represent/identify desde el setup. */

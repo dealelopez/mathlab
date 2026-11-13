@@ -1,4 +1,4 @@
-import type { ExerciseType, DifficultyLevel } from '../types';
+import type { ExerciseType, DifficultyLevel, Manipulative } from '../types';
 import type { DifficultyConfig } from './types';
 
 /**
@@ -199,4 +199,24 @@ export const DIFFICULTY_MAP: Record<ExerciseType, Record<DifficultyLevel, Diffic
  */
 export function getDifficultyConfig(type: ExerciseType, level: DifficultyLevel): DifficultyConfig {
   return DIFFICULTY_MAP[type][level];
+}
+
+/**
+ * Niveles en los que un manipulativo es válido para un tipo de ejercicio.
+ * El generador no filtra por `validManipulatives` (usa el manipulativo recibido tal
+ * cual), así que la UI debe ofrecer solo estos niveles: de lo contrario, un rekenrek en
+ * el nivel 5 recibiría "Muestra el 87" con un máximo de 20 cuentas.
+ * Sin manipulativo, o en tipos que no lo usan (decompose, series, placement),
+ * están disponibles todos los niveles.
+ */
+export function getAvailableLevels(
+  type: ExerciseType,
+  manipulative?: Manipulative,
+): DifficultyLevel[] {
+  const levels: DifficultyLevel[] = [1, 2, 3, 4, 5];
+  if (manipulative === undefined) return levels;
+  return levels.filter((level) => {
+    const valid = DIFFICULTY_MAP[type][level].validManipulatives;
+    return valid === undefined || valid.includes(manipulative);
+  });
 }

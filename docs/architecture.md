@@ -112,13 +112,15 @@ mathlab/
 │   │   │   ├── identify.ts             # "¿Qué número es este?"
 │   │   │   ├── decompose.ts            # "N = ___ + ___"
 │   │   │   ├── series.ts               # "2, 4, 6, ___, ___"
-│   │   │   └── placement.ts            # "Coloca el N en la recta"
+│   │   │   ├── placement.ts            # "Coloca el N en la recta"
+│   │   │   └── operation.ts            # "¿Cuánto es a + b?" (T23: saltos sobre la recta)
 │   │   └── validators/
 │   │       ├── represent.ts
 │   │       ├── identify.ts
 │   │       ├── decompose.ts
 │   │       ├── series.ts
-│   │       └── placement.ts
+│   │       ├── placement.ts
+│   │       └── operation.ts            # valida el camino de saltos (add/subtract)
 │   ├── components/
 │   │   ├── primitives/
 │   │   │   ├── Bead.tsx                 # Cuenta SVG individual
@@ -142,11 +144,12 @@ mathlab/
 │   │   │       ├── DecomposeView.tsx     # "N = ___ + ___" (tira de dígitos o huecos + opciones)
 │   │   │       ├── SeriesView.tsx        # "2, 4, 6, ___"
 │   │   │       ├── IdentifyFree.tsx      # un hueco por cifra + dígitos 0-9
-│   │   │       └── PlacementView.tsx     # "Coloca el N en la recta" (validación automática)
+│   │   │       ├── PlacementView.tsx     # "Coloca el N en la recta" (validación automática)
+│   │   │       └── JumpsView.tsx         # sumas/restas: saltos sobre la recta (T23)
 │   │   ├── tutorial/
 │   │   │   └── AbacusTutorial.tsx        # Tutorial paso a paso del ábaco
 │   │   └── layout/                       # Navegación y páginas (T15)
-│   │       ├── Home.tsx                  # Tarjetas: 4 manipulativos + Descomposición y Series
+│   │       ├── Home.tsx                  # Tarjetas: 4 manipulativos + Descomposición, Series, Sumas y Restas
 │   │       ├── Navigation.tsx            # Botón "← Volver" + título
 │   │       ├── SandboxPage.tsx           # Exploración libre con controles por manipulativo
 │   │       ├── ActivitiesPage.tsx        # Elegir ejercicio, nivel y modo → "Empezar"
@@ -166,12 +169,14 @@ mathlab/
 │   │   │   ├── identify.test.ts
 │   │   │   ├── decompose.test.ts
 │   │   │   ├── series.test.ts
-│   │   │   └── placement.test.ts
+│   │   │   ├── placement.test.ts
+│   │   │   └── operation.test.ts
 │   │   └── validators/
 │   │       ├── exact.test.ts            # represent e identify
 │   │       ├── decompose.test.ts
 │   │       ├── series.test.ts
-│   │       └── placement.test.ts
+│   │       ├── placement.test.ts
+│   │       └── operation.test.ts
 │   ├── components/                      # un test por componente (+ layout/)
 │   ├── hooks/
 │   │   └── usePointerDrag.test.tsx

@@ -59,7 +59,6 @@ las que el usuario quiere primero; el resto, de menos a más riesgo. Una tarea p
 
 | Orden | Spec | ID | Esfuerzo | Notas |
 |---|---|---|---|---|
-| 0 | [`task-23-sumas-restas-saltos.md`](task-23-sumas-restas-saltos.md) | IDEA-01 (P1) | L | **Prioridad del usuario.** Niveles: ≤10, ≤20, ≤100 (medio), >100 (hasta 200) y hasta 300 en recta vacía. Tres subtareas (A, B, C). **Subtarea A hecha (2026-11-14)**; quedan B (recta + vista + runner) y C (acceso desde la app) |
 | 0 | [`task-24-completar-hasta-10.md`](task-24-completar-hasta-10.md) | IDEA-01 (P3) | M | Independiente de las demás |
 | 1 | [`task-16-tenframe-rellenado.md`](task-16-tenframe-rellenado.md) | TENFRAME-01 | S | Decisión (a)/(b) propuesta: (a) |
 | 2 | [`task-17-numberline-responsive.md`](task-17-numberline-responsive.md) | UX-04 | S | Solo escalado; el `step` queda fuera |
@@ -101,7 +100,8 @@ TECH-04 (RNG inyectable: cambio transversal en generadores).
 - [~] IDEA-01 Operaciones y estrategias de resolución inspiradas en Innovamat. Decidido:
   se añaden suma y resta, para 6-7 años, y se mide el tiempo sin mostrarlo. Propuesta:
   [`261113--propuesta-estrategias-innovamat.md`](261113--propuesta-estrategias-innovamat.md).
-  Specs listas: T23 (saltos), T24 (completar hasta 10), T25 (tiempo).
+  **T23 (sumas y restas con saltos) hecha y archivada** (2026-11-14; pendiente de probar
+  en iPad). Quedan: T24 (completar hasta 10) y T25 (tiempo).
 - [ ] UX-03 Marcador verde con la posición correcta tras fallar en placement (estaba en
   la spec de T14 y no se implementó). **Choca con la regla «no mostrar el resultado de
   los ejercicios» (BUG-05).** No implementar sin que el usuario lo confirme.

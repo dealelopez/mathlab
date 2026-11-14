@@ -35,7 +35,7 @@ GitHub Pages, sin backend.
 | `src/components/primitives/` | Bead, BeadRow, Counter, NumberTiles, AnswerSlot, NumberPad, DragDropContext |
 | `src/components/manipulatives/` | Rekenrek, Abacus, TenFrame, NumberLine |
 | `src/components/activities/` | ActivityShell, FeedbackBanner, ExerciseRunner (orquestador) |
-| `src/components/activities/views/` | Una vista por tipo de ejercicio: Manipulative, Decompose, Series, IdentifyFree, Placement |
+| `src/components/activities/views/` | Una vista por tipo de ejercicio: Manipulative, Decompose, Series, IdentifyFree, Placement, Jumps |
 | `src/components/tutorial/` | AbacusTutorial |
 | `src/hooks/usePointerDrag.ts` | Drag unificado ratón/táctil (Pointer Events) |
 | `src/lib/math.ts` | Utilidades puras (random, shuffle, dígitos) |
@@ -75,18 +75,20 @@ GitHub Pages, sin backend.
 | `.github/workflows/deploy.yml` | Test + build + deploy en push a `main` |
 | `docs/roadmap.md` | Plan de tareas por fases |
 
-## Estado actual (2026-11-13)
+## Estado actual (2026-11-14)
 
-- Tareas 01-15 completadas. La app es usable de punta a punta: Home → sandbox,
-  actividades o tutorial → sesión → volver.
-- Correcciones hechas: BUG-01, BUG-02, BUG-03 y BUG-04 (cada una con test de regresión).
-- Base verificada: 30 ficheros de test, 320 tests, `pnpm build` correcto. pnpm lo fija
-  `packageManager` en `package.json` (pnpm 10).
-- Pendiente de comprobar a ojo en navegador e iPad: el diseño de Home, sandboxes y
-  actividades solo está cubierto por tests y build.
-- Siguiente: `docs/roadmap.md`, sección «Siguientes tareas» (T16-T25, con spec cada
-  una; T23 y T24, las operaciones, son la prioridad del usuario). Las decisiones abiertas están al final del roadmap.
+- Tareas 01-15 y T23 completadas. La app es usable de punta a punta: Home → sandbox,
+  actividades o tutorial → sesión → volver. Sumas y restas con saltos sobre la recta
+  accesibles desde Home (niveles hasta 300 con recta vacía en el 5).
+- Correcciones hechas: BUG-01 a BUG-06 (cada una con test de regresión).
+- Base verificada: 32 ficheros de test, 402 tests, `pnpm build` correcto. pnpm lo fija
+  `packageManager` en `package.json` (pnpm 10). Node en nvm: v22.22.2.
+- Pendiente de comprobar a ojo en navegador e iPad: el diseño de Home, sandboxes,
+  actividades y **los botones y arcos de sumas/restas (T23)** solo están cubiertos por
+  tests y build.
+- Siguiente: `docs/roadmap.md`, sección «Siguientes tareas» (T16-T22 y T24-T25, con spec
+  cada una). Las decisiones abiertas están al final del roadmap.
 - Regla de producto: **no mostrar el resultado de los ejercicios** en pantalla (BUG-05).
-- Decisión: mathlab añadirá suma y resta (6-7 años) con saltos sobre la recta (T23). El
-  tiempo por ejercicio se registra pero no se muestra (T25).
+  En sumas/restas: el marcador de posición actual no lleva número.
+- El tiempo por ejercicio se registrará pero no se mostrará (T25, requiere T19).
 - Análisis y resultados de la última ronda: `docs/261113--analisis-estado-proyecto.md`.

@@ -9,7 +9,7 @@ export interface ActivityConfig {
 }
 
 /** Tipos de ejercicio que no dependen de un manipulativo y tienen su propia tarjeta en Home. */
-export type StandaloneExercise = 'decompose' | 'series';
+export type StandaloneExercise = 'decompose' | 'series' | 'add' | 'subtract';
 
 /** Páginas de la app. La navegación es por estado React, sin router ni URLs. */
 export type Page =

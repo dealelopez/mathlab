@@ -7,7 +7,7 @@ export interface HomeProps {
   onNavigate: (page: Page) => void;
 }
 
-const STANDALONE: StandaloneExercise[] = ['decompose', 'series'];
+const STANDALONE: StandaloneExercise[] = ['decompose', 'series', 'add', 'subtract'];
 
 const cardButton =
   'min-h-11 cursor-pointer rounded-lg border-2 border-blue-600 px-4 py-2 text-base font-semibold text-blue-700';

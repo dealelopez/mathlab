@@ -8,6 +8,8 @@ const TYPES: { value: ExerciseType; label: string }[] = [
   { value: 'decompose', label: 'Descomponer' },
   { value: 'series', label: 'Series' },
   { value: 'placement', label: 'Posición en recta' },
+  { value: 'add', label: 'Sumas con saltos' },
+  { value: 'subtract', label: 'Restas con saltos' },
 ];
 
 const MODES: { value: AnswerMode; label: string }[] = [
@@ -35,7 +37,7 @@ export default function DevPage() {
   const [runId, setRunId] = useState(0);
 
   const validManipulatives = MANIPULATIVES.filter((m) => m.for.includes(type));
-  // Descomponer, series y posición no usan manipulativo: se oculta el selector
+  // Descomponer, series, posición, sumas y restas no usan manipulativo: se oculta el selector
   const needsManipulative = validManipulatives.length > 0;
   const safeManipulative = validManipulatives.some((m) => m.value === manipulative)
     ? manipulative

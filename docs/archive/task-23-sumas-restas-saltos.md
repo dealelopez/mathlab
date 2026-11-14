@@ -313,3 +313,33 @@ Commit: `feat(IDEA-01): sumas y restas accesibles desde Home y modo desarrollo`.
 - Resta como distancia entre dos números (P2), estimar antes de resolver (P5).
 - Dividir `NumberLine` para ancho adaptable: es T17.
 - Medir tiempo: es T25.
+
+## Cierre (2026-11-14)
+
+Hecha en tres commits, uno por subtarea:
+
+1. `feat(IDEA-01): motor de sumas y restas con saltos (generadores, validador, dificultad)`
+2. `feat(IDEA-01): vista de saltos sobre la recta para sumas y restas`
+3. `feat(IDEA-01): sumas y restas accesibles desde Home y modo desarrollo`
+
+Verificación final: 32 ficheros de test, 402 tests en verde (suite completa ejecutada
+3 veces por el azar de los generadores, el fichero del runner 5), `pnpm build` correcto.
+
+Qué se hizo distinto de la especificación:
+
+- **Los tests del runner pulsan «Comprobar» explícitamente**: la vista no auto-valida al
+  aterrizar en el resultado (a diferencia de placement). La spec B2/B3 lo dejaba claro
+  pero al escribir los tests costó un ciclo de depuración.
+- **Ventana degenerada (A3):** la defensa «si `lo === hi`, sumar 100» se implementó tal
+  cual, aunque con los rangos de operandos actuales es matemáticamente inalcanzable
+  (queda como cinturón de seguridad si se recalibran los rangos).
+- **Etiquetas de salto (B1):** con la regla de 22 px, en el nivel 2 un salto de +1 (21 px
+  por unidad) y en el nivel 3 los saltos de 1-5 no pintan etiqueta. Es el comportamiento
+  previsto por la spec, pero conviene comprobarlo a ojo.
+- **`answerMode` se ignora** en los generadores (`_answerMode`): devolvía `noUnusedParameters`
+  en `pnpm build`; mismo trato que `_manipulative`.
+- **Entorno:** Node en nvm es v22.22.2 (la guía decía v24.16.0); pendiente de actualizar
+  `docs/guia-continuacion.md`.
+
+Pendiente (regla de la guía): **probar en navegador e iPad** — tamaño de los botones de
+salto (`min-h-11 min-w-11`), aspecto de los arcos y etiquetas, y el nivel 5 (recta vacía).

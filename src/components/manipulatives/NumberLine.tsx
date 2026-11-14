@@ -16,6 +16,8 @@ export interface Jump {
   to: number;
   /** Color del arco */
   color: string;
+  /** Etiqueta sobre el arco (ej. '+2'). Solo se pinta si el arco mide al menos 22 px. */
+  label?: string;
 }
 
 export interface NumberLineProps {
@@ -78,7 +80,8 @@ export default function NumberLine({
   const hi = Math.max(min, max);
   const lineStart = PAD;
   const lineEnd = width - PAD;
-  const baseY = 45;
+  // El arco puede subir hasta baseY - 4 - 40; con margen inferior para los números.
+  const baseY = height - 35;
 
   const tickCount = Math.round((hi - lo) / safeStep) + 1;
   const ticks = Array.from({ length: tickCount }, (_, i) => lo + i * safeStep);
@@ -150,15 +153,32 @@ export default function NumberLine({
         const x1 = xOf(j.from);
         const x2 = xOf(j.to);
         const lift = Math.min(40, Math.max(14, Math.abs(x2 - x1) / 3));
+        // En rectas largas los saltos pequeños son tan estrechos que las etiquetas
+        // se amontonarían: solo se pintan si el arco mide al menos 22 px.
+        const showLabel = j.label !== undefined && Math.abs(x2 - x1) >= 22;
         return (
-          <path
-            key={i}
-            d={`M ${x1} ${baseY - 4} Q ${(x1 + x2) / 2} ${baseY - 4 - lift * 2} ${x2} ${baseY - 4}`}
-            fill="none"
-            stroke={j.color}
-            strokeWidth={2.5}
-            data-testid="numberline-jump"
-          />
+          <g key={i}>
+            <path
+              d={`M ${x1} ${baseY - 4} Q ${(x1 + x2) / 2} ${baseY - 4 - lift * 2} ${x2} ${baseY - 4}`}
+              fill="none"
+              stroke={j.color}
+              strokeWidth={2.5}
+              data-testid="numberline-jump"
+            />
+            {showLabel && (
+              <text
+                x={(x1 + x2) / 2}
+                y={baseY - 8 - lift}
+                textAnchor="middle"
+                fontSize={12}
+                fontWeight="bold"
+                fill={j.color}
+                data-testid="numberline-jump-label"
+              >
+                {j.label}
+              </text>
+            )}
+          </g>
         );
       })}
       {/* Marcadores */}

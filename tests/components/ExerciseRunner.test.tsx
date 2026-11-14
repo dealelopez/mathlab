@@ -1008,4 +1008,319 @@ describe('ExerciseRunner', () => {
       expect(slots.every((sl) => sl.textContent === '?')).toBe(true);
     });
   });
+
+  describe('sumas y restas', () => {
+    /** Renderiza una sesión del tipo dado y captura el ejercicio generado. */
+    function renderOp(type: 'add' | 'subtract', difficulty: 1 | 2 | 3 | 4 | 5) {
+      const utils = renderCapturing(
+        <ExerciseRunner exerciseType={type} difficulty={difficulty} />,
+      );
+      return { ...utils, type };
+    }
+
+    /** Reintenta el render hasta que el ejercicio cumpla la condición (hay azar). */
+    function renderUntil(
+      type: 'add' | 'subtract',
+      difficulty: 1 | 2 | 3 | 4 | 5,
+      cond: (exercise: Exercise) => boolean,
+    ) {
+      for (let i = 0; i < 60; i++) {
+        const utils = renderCapturing(
+          <ExerciseRunner exerciseType={type} difficulty={difficulty} />,
+        );
+        if (cond(utils.exercise)) return { ...utils, type };
+        utils.unmount();
+      }
+      throw new Error('no se encontró un ejercicio que cumpla la condición');
+    }
+
+    function jumpButtons(container: HTMLElement) {
+      return Array.from(
+        container.querySelectorAll<HTMLButtonElement>('button[data-testid^="jump-btn-"]'),
+      ).map((el) => ({ el, n: Number(el.getAttribute('data-testid')!.slice('jump-btn-'.length)) }));
+    }
+
+    /** Llega de start a result pulsando siempre el mayor salto disponible que quepa. */
+    function solveByGreedy(container: HTMLElement, start: number, result: number) {
+      const sense = result >= start ? 1 : -1;
+      let current = start;
+      for (let guard = 0; guard < 200 && current !== result; guard++) {
+        const remaining = Math.abs(result - current);
+        const options = jumpButtons(container)
+          .filter(({ el, n }) => !el.disabled && n <= remaining)
+          .sort((x, y) => y.n - x.n);
+        expect(options.length).toBeGreaterThan(0);
+        fireEvent.click(options[0]!.el);
+        current += sense * options[0]!.n;
+      }
+      expect(current).toBe(result);
+    }
+
+    /** El marcador en data-position dado (el rojo es el del último salto). */
+    function markerAt(container: HTMLElement, position: number): Element | undefined {
+      return Array.from(container.querySelectorAll('[data-testid="numberline-marker"]')).find(
+        (m) => m.getAttribute('data-position') === String(position),
+      );
+    }
+
+    it('suma nivel 1: instrucción con operandos y botones 1-5 (sin 10 ni 20)', () => {
+      const { container, exercise, getByTestId } = renderOp('add', 1);
+      const [a, b] = exercise.setup.operands!;
+      expect(getByTestId('activity-instruction').textContent).toContain(`${a} + ${b}`);
+      for (const n of [1, 2, 3, 4, 5]) {
+        expect(container.querySelector(`[data-testid="jump-btn-${n}"]`)).toBeInTheDocument();
+      }
+      expect(container.querySelector('[data-testid="jump-btn-10"]')).not.toBeInTheDocument();
+      expect(container.querySelector('[data-testid="jump-btn-20"]')).not.toBeInTheDocument();
+    });
+
+    it('suma nivel 2: hay botón +10', () => {
+      const { container } = renderOp('add', 2);
+      expect(container.querySelector('[data-testid="jump-btn-10"]')).toBeInTheDocument();
+    });
+
+    it('suma: camino de un solo salto del tamaño exacto → correcto', () => {
+      const { container, exercise } = renderUntil('add', 2, (ex) => {
+        const b = ex.setup.operands![1]!;
+        return b <= 5 || b === 10;
+      });
+      const b = exercise.setup.operands![1]!;
+      fireEvent.click(container.querySelector(`[data-testid="jump-btn-${b}"]`)!);
+      fireEvent.click(checkBtn(container));
+      expect(correctBanner(container)).toBeInTheDocument();
+    });
+
+    it('suma: camino de varios saltos → correcto', () => {
+      const { container, exercise } = renderUntil('add', 2, (ex) => ex.setup.operands![1]! >= 3);
+      const [a, b] = exercise.setup.operands!;
+      fireEvent.click(container.querySelector('[data-testid="jump-btn-1"]')!);
+      solveByGreedy(container, a + 1, a + b);
+      fireEvent.click(checkBtn(container));
+      expect(correctBanner(container)).toBeInTheDocument();
+    });
+
+    it('suma: muchos saltos de +1 → correcto', () => {
+      const { container, exercise } = renderOp('add', 1);
+      const [a, b] = exercise.setup.operands!;
+      for (let i = 0; i < b; i++) {
+        fireEvent.click(container.querySelector('[data-testid="jump-btn-1"]')!);
+      }
+      fireEvent.click(checkBtn(container));
+      expect(correctBanner(container)).toBeInTheDocument();
+      void a;
+    });
+
+    it('suma: quedarse corto → incorrecto con "Todavía no has llegado"', () => {
+      const { container } = renderUntil('add', 2, (ex) => ex.setup.operands![1]! >= 2);
+      fireEvent.click(container.querySelector('[data-testid="jump-btn-1"]')!);
+      fireEvent.click(checkBtn(container));
+      const banner = container.querySelector('[data-testid="feedback-banner"]')!;
+      expect(banner.getAttribute('data-type')).toBe('incorrect');
+      expect(banner.textContent).toContain('Todavía no has llegado');
+    });
+
+    it('suma: pasarse → incorrecto con "Te has pasado"', () => {
+      const { container, exercise } = renderUntil(
+        'add',
+        2,
+        (ex) => (ex.correctAnswer as number) < 20,
+      );
+      const [a, b] = exercise.setup.operands!;
+      solveByGreedy(container, a, a + b);
+      fireEvent.click(container.querySelector('[data-testid="jump-btn-1"]')!);
+      fireEvent.click(checkBtn(container));
+      const banner = container.querySelector('[data-testid="feedback-banner"]')!;
+      expect(banner.textContent).toContain('Te has pasado');
+    });
+
+    it('deshacer quita un arco; empezar de nuevo los quita todos', () => {
+      const { container } = renderUntil('add', 2, (ex) => ex.setup.operands![1]! >= 3);
+      fireEvent.click(container.querySelector('[data-testid="jump-btn-1"]')!);
+      fireEvent.click(container.querySelector('[data-testid="jump-btn-1"]')!);
+      expect(container.querySelectorAll('[data-testid="numberline-jump"]')).toHaveLength(2);
+      fireEvent.click(container.querySelector('[data-testid="jump-undo"]')!);
+      expect(container.querySelectorAll('[data-testid="numberline-jump"]')).toHaveLength(1);
+      fireEvent.click(container.querySelector('[data-testid="jump-clear"]')!);
+      expect(container.querySelectorAll('[data-testid="numberline-jump"]')).toHaveLength(0);
+    });
+
+    it('cada arco lleva su etiqueta +N', () => {
+      const { container } = renderUntil('add', 1, (ex) => ex.setup.operands![1]! >= 3);
+      fireEvent.click(container.querySelector('[data-testid="jump-btn-1"]')!);
+      fireEvent.click(container.querySelector('[data-testid="jump-btn-2"]')!);
+      const labels = Array.from(
+        container.querySelectorAll('[data-testid="numberline-jump-label"]'),
+      );
+      expect(labels.map((l) => l.textContent)).toEqual(['+1', '+2']);
+    });
+
+    it('comprobar sin saltos avisa y no llama al validador', () => {
+      const validate = vi.spyOn(ExerciseEngine.prototype, 'validate');
+      try {
+        const { container } = render(<ExerciseRunner exerciseType="add" difficulty={1} />);
+        fireEvent.click(checkBtn(container));
+        expect(validate).not.toHaveBeenCalled();
+        expect(container.querySelector('[data-testid="feedback-banner"]')!.textContent).toContain(
+          'Haz al menos un salto',
+        );
+      } finally {
+        validate.mockRestore();
+      }
+    });
+
+    it('tras acertar, los botones de salto, deshacer y empezar de nuevo quedan desactivados', () => {
+      const { container, exercise } = renderOp('add', 1);
+      const [a, b] = exercise.setup.operands!;
+      solveByGreedy(container, a, a + b);
+      fireEvent.click(checkBtn(container));
+      for (const { el } of jumpButtons(container)) expect(el.disabled).toBe(true);
+      expect(
+        (container.querySelector('[data-testid="jump-undo"]') as HTMLButtonElement).disabled,
+      ).toBe(true);
+      expect(
+        (container.querySelector('[data-testid="jump-clear"]') as HTMLButtonElement).disabled,
+      ).toBe(true);
+    });
+
+    it('tras fallar y deshacer, se puede acertar', () => {
+      const { container, exercise } = renderUntil('add', 2, (ex) => ex.setup.operands![1]! >= 2);
+      const [a, b] = exercise.setup.operands!;
+      fireEvent.click(container.querySelector('[data-testid="jump-btn-1"]')!);
+      fireEvent.click(checkBtn(container));
+      expect(incorrectBanner(container)).toBeInTheDocument();
+      fireEvent.click(container.querySelector('[data-testid="jump-undo"]')!);
+      solveByGreedy(container, a, a + b);
+      fireEvent.click(checkBtn(container));
+      expect(correctBanner(container)).toBeInTheDocument();
+    });
+
+    it('regla 6.1: el marcador actual no lleva número y el texto no revela el resultado', () => {
+      const { container, exercise, getByTestId } = renderOp('add', 1);
+      const [a, b] = exercise.setup.operands!;
+      const result = exercise.correctAnswer as number;
+      fireEvent.click(container.querySelector('[data-testid="jump-btn-1"]')!);
+      const red = markerAt(container, a + 1)!;
+      expect(red).toBeDefined();
+      expect(red.querySelector('text')).toBeNull();
+      if (result !== a && result !== b) {
+        expect(
+          new RegExp(`\\b${result}\\b`).test(getByTestId('activity-instruction').textContent!),
+        ).toBe(false);
+      }
+    });
+
+    it('los botones que se salen de la recta están desactivados (nivel 2, +10 desde el inicio)', () => {
+      const { container } = renderUntil('add', 2, (ex) => ex.setup.operands![0]! + 10 > 20);
+      expect(
+        (container.querySelector('[data-testid="jump-btn-10"]') as HTMLButtonElement).disabled,
+      ).toBe(true);
+    });
+
+    it('invariante: cada botón está activo solo si el salto cabe en la recta', () => {
+      for (const [type, difficulty] of [
+        ['add', 3],
+        ['subtract', 2],
+      ] as const) {
+        const { container, exercise, unmount } = renderOp(type, difficulty);
+        const [lo, hi] = exercise.setup.numberLineRange!;
+        const [start] = exercise.setup.operands!;
+        const result = exercise.correctAnswer as number;
+        const sense = result >= start ? 1 : -1;
+        let current = start;
+        for (let step = 0; step < 3; step++) {
+          for (const { el, n } of jumpButtons(container)) {
+            const next = current + sense * n;
+            expect(el.disabled).toBe(next < lo || next > hi);
+          }
+          fireEvent.click(container.querySelector('[data-testid="jump-btn-1"]')!);
+          current += sense;
+        }
+        unmount();
+      }
+    });
+
+    it('resta: instrucción con −, primer salto baja del minuendo y camino correcto → correcto', () => {
+      const { container, exercise, getByTestId } = renderOp('subtract', 2);
+      const [m, b] = exercise.setup.operands!;
+      expect(getByTestId('activity-instruction').textContent).toContain(`${m} − ${b}`);
+      fireEvent.click(container.querySelector('[data-testid="jump-btn-1"]')!);
+      expect(markerAt(container, m - 1)).toBeDefined();
+      // La vista ya está en m−1 tras el primer salto: el solver parte de ahí.
+      solveByGreedy(container, m - 1, m - b);
+      fireEvent.click(checkBtn(container));
+      expect(correctBanner(container)).toBeInTheDocument();
+      void b;
+    });
+
+    it('resta: quedarse corto → incorrecto con "Todavía no has llegado"', () => {
+      const { container } = renderUntil('subtract', 2, (ex) => ex.setup.operands![1]! >= 2);
+      fireEvent.click(container.querySelector('[data-testid="jump-btn-1"]')!);
+      fireEvent.click(checkBtn(container));
+      const banner = container.querySelector('[data-testid="feedback-banner"]')!;
+      expect(banner.textContent).toContain('Todavía no has llegado');
+    });
+
+    it('resta: cada arco lleva su etiqueta −N', () => {
+      const { container } = renderUntil('subtract', 1, (ex) => ex.setup.operands![1]! >= 3);
+      fireEvent.click(container.querySelector('[data-testid="jump-btn-1"]')!);
+      fireEvent.click(container.querySelector('[data-testid="jump-btn-2"]')!);
+      const labels = Array.from(
+        container.querySelectorAll('[data-testid="numberline-jump-label"]'),
+      );
+      expect(labels.map((l) => l.textContent)).toEqual(['−1', '−2']);
+    });
+
+    it('suma nivel 3: recta 0-100 con números cada 10, saltos grandes y camino por decenas', () => {
+      const { container, exercise } = renderOp('add', 3);
+      expect(exercise.setup.numberLineRange).toEqual([0, 100]);
+      const nums = Array.from(
+        container.querySelectorAll('[data-testid="numberline-number"]'),
+      ).map((n) => n.textContent);
+      expect(nums).toEqual(['0', '10', '20', '30', '40', '50', '60', '70', '80', '90', '100']);
+      expect(container.querySelector('[data-testid="jump-btn-20"]')).toBeInTheDocument();
+      expect(container.querySelector('[data-testid="jump-btn-50"]')).toBeInTheDocument();
+      const [a, b] = exercise.setup.operands!;
+      solveByGreedy(container, a, a + b);
+      fireEvent.click(checkBtn(container));
+      expect(correctBanner(container)).toBeInTheDocument();
+    });
+
+    it('suma nivel 4: resultado > 100, recta en múltiplos de 100 y salto de 100', () => {
+      const { container, exercise } = renderOp('add', 4);
+      const [a] = exercise.setup.operands!;
+      const result = exercise.correctAnswer as number;
+      expect(result).toBeGreaterThan(100);
+      const [winLo, winHi] = exercise.setup.numberLineRange!;
+      expect(winLo % 100).toBe(0);
+      expect(winHi % 100).toBe(0);
+      expect(container.querySelector('[data-testid="jump-btn-100"]')).toBeInTheDocument();
+      solveByGreedy(container, a, result);
+      fireEvent.click(checkBtn(container));
+      expect(correctBanner(container)).toBeInTheDocument();
+    });
+
+    it('suma nivel 5: recta vacía, solo el marcador de partida lleva número', () => {
+      const { container, exercise } = renderOp('add', 5);
+      expect(container.querySelectorAll('[data-testid="numberline-number"]')).toHaveLength(0);
+      const [a, b] = exercise.setup.operands!;
+      const marker = container.querySelector('[data-testid="numberline-marker"]')!;
+      expect(marker.textContent).toContain(String(a));
+      solveByGreedy(container, a, a + b);
+      fireEvent.click(checkBtn(container));
+      expect(correctBanner(container)).toBeInTheDocument();
+    });
+
+    it('resta nivel 4: minuendo > 100, ventana en múltiplos de 100 y saltos bajan hasta acertar', () => {
+      const { container, exercise } = renderOp('subtract', 4);
+      const [m, b] = exercise.setup.operands!;
+      expect(m).toBeGreaterThan(100);
+      expect(b).toBeGreaterThanOrEqual(1);
+      const [winLo, winHi] = exercise.setup.numberLineRange!;
+      expect(winLo % 100).toBe(0);
+      expect(winHi % 100).toBe(0);
+      solveByGreedy(container, m, m - b);
+      fireEvent.click(checkBtn(container));
+      expect(correctBanner(container)).toBeInTheDocument();
+    });
+  });
 });

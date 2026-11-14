@@ -14,6 +14,7 @@ import DecomposeView from './views/DecomposeView';
 import SeriesView from './views/SeriesView';
 import IdentifyFree from './views/IdentifyFree';
 import PlacementView from './views/PlacementView';
+import JumpsView from './views/JumpsView';
 
 export interface ExerciseRunnerProps {
   /** Tipo de ejercicio */
@@ -105,6 +106,15 @@ export default function ExerciseRunner({
       setFeedbackMessage('Escribe tu respuesta para comprobar');
       return;
     }
+    // sumas y restas responden con la lista de aterrizajes: sin saltos, avisar sin validar.
+    if (current.type === 'add' || current.type === 'subtract') {
+      const jumps = userAnswer as number[] | null;
+      if (!Array.isArray(jumps) || jumps.length === 0) {
+        setFeedback('incorrect');
+        setFeedbackMessage('Haz al menos un salto para comprobar');
+        return;
+      }
+    }
     check((userAnswer ?? 0) as Answer);
   };
 
@@ -183,6 +193,14 @@ export default function ExerciseRunner({
             locked={feedback === 'correct'}
             onAnswer={handleAnswer}
             onAutoCheck={(a) => check(a)}
+          />
+        )}
+        {(current.type === 'add' || current.type === 'subtract') && (
+          <JumpsView
+            key={current.id}
+            exercise={current}
+            locked={feedback === 'correct'}
+            onAnswer={handleAnswer}
           />
         )}
       </ActivityShell>

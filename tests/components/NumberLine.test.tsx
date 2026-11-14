@@ -104,4 +104,35 @@ describe('NumberLine', () => {
     fireEvent.click(container.querySelector('[data-testid="number-line"]')!, { clientX: 250 });
     expect(onPlaceMarker).not.toHaveBeenCalled();
   });
+
+  it('salto ancho con label: pinta el texto de la etiqueta', () => {
+    const { container } = render(
+      <NumberLine min={0} max={10} jumps={[{ from: 2, to: 4, color: '#6366F1', label: '+2' }]} />,
+    );
+    const label = container.querySelector('[data-testid="numberline-jump-label"]')!;
+    expect(label.tagName.toLowerCase()).toBe('text');
+    expect(label.textContent).toBe('+2');
+  });
+
+  it('salto estrecho (menos de 22 px) con label: no pinta la etiqueta', () => {
+    // En una recta 0-100, un salto de 1 mide ~4 px: la etiqueta amontonaría.
+    const { container } = render(
+      <NumberLine min={0} max={100} jumps={[{ from: 0, to: 1, color: '#6366F1', label: '+1' }]} />,
+    );
+    expect(container.querySelectorAll('[data-testid="numberline-jump-label"]')).toHaveLength(0);
+  });
+
+  it('salto sin label: no pinta etiqueta', () => {
+    const { container } = render(
+      <NumberLine min={0} max={10} jumps={[{ from: 2, to: 6, color: 'blue' }]} />,
+    );
+    expect(container.querySelectorAll('[data-testid="numberline-jump-label"]')).toHaveLength(0);
+  });
+
+  it('la línea base baja con el alto del SVG (height 110 → y=75; por defecto → y=45)', () => {
+    const { container } = render(<NumberLine min={0} max={10} height={110} />);
+    expect(container.querySelector('line[y1="75"]')).not.toBeNull();
+    const { container: c2 } = render(<NumberLine min={0} max={10} />);
+    expect(c2.querySelector('line[y1="45"]')).not.toBeNull();
+  });
 });
